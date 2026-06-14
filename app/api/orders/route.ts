@@ -1,0 +1,101 @@
+import { eq } from "drizzle-orm";
+import { NextRequest } from "next/server";
+import { ensureDb, jsonError } from "@/lib/api";
+import { getOrCreateCartSessionId, getSession } from "@/lib/auth";
+import { getCartItemsForUser } from "@/lib/cart-helpers";
+import { db } from "@/lib/db";
+import { cartItems, orderItems, orders, products, users } from "@/lib/db/schema";
+
+export async function POST(request: NextRequest) {
+  await ensureDb();
+  const session = await getSession();
+  if (!session) return jsonError("Debe iniciar sesión", 401);
+
+  const cartSessionId = await getOrCreateCartSessionId();
+  const items = await getCartItemsForUser(session, cartSessionId);
+
+  if (!items.length) return jsonError("El carrito está vacío");
+
+  const body = await request.json();
+  const {
+    firstName,
+    lastName,
+    address,
+    city,
+    zip,
+    phone,
+    paymentMethod = "card",
+  } = body;
+
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const shipping = 150;
+  const total = subtotal + shipping;
+
+  const orderNumber = `SC-${Date.now().toString().slice(-5)}`;
+
+  const [order] = await db
+    .insert(orders)
+    .values({
+      userId: session.userId,
+      orderNumber,
+      status: "received",
+      subtotal,
+      shipping,
+      total,
+      paymentMethod,
+      shippingAddress: JSON.stringify({
+        firstName,
+        lastName,
+        street: address,
+        city,
+        zip,
+      }),
+      contactPhone: phone,
+      deliveryNotes: "",
+      driverName: "Carlos Mendoza",
+      driverVehicle: "En motocicleta",
+      driverDistance: "1.2 km",
+      estimatedDelivery: "11:25 AM",
+      mapImageUrl:
+        "https://lh3.googleusercontent.com/aida-public/AB6AXuB2_ANdbZ4HIHCEVmL70zXzA9SFNOYyRNsVyOoWGG7Wi4Z3FaZaIRb6UgaIFYqdEcHNIZ2uF766-ds58P9sqsfCJT4EPHr55V1Du6CkTtHfauMawLi1arOEpjL-m5WQyeZU3l72_QaI_D6nxPrvXdSkrDsH2ruXIJKMJjzCfgmlL-wfokzVSfVQsg_q-cEqznmf0odfaViTEVXFjUdyfcazO0grs9_vnXkkRiioq48bjb2rJNqzCaaDis9IhFTWXEkqjeFPZO9_0N0",
+      statusTimeline: JSON.stringify([
+        { status: "received", label: "Pedido Recibido", time: "10:15 AM" },
+        { status: "preparing", label: "En Preparación", time: "10:45 AM" },
+        { status: "in_transit", label: "En Camino", time: "En Tránsito" },
+        { status: "delivered", label: "Entregado", time: "Pendiente" },
+      ]),
+    })
+    .returning();
+
+  for (const item of items) {
+    await db.insert(orderItems).values({
+      orderId: order.id,
+      productId: item.productId,
+      productName: item.name,
+      productImage: item.imageUrl,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      detail: item.category,
+    });
+  }
+
+  await db.delete(cartItems).where(eq(cartItems.userId, session.userId));
+
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
+
+  if (user) {
+    await db
+      .update(users)
+      .set({ loyaltyPoints: user.loyaltyPoints + Math.floor(total / 10) })
+      .where(eq(users.id, session.userId));
+  }
+
+  return Response.json({ orderId: order.id, orderNumber: order.orderNumber });
+}
