@@ -1,5 +1,3 @@
-import Image from "next/image";
-import Link from "next/link";
 import MaterialIcon from "./MaterialIcon";
 
 type FooterVariant = "default" | "checkout" | "profile" | "tracking";
@@ -12,66 +10,69 @@ export default function Footer({ variant = "default" }: FooterProps) {
   // Para las páginas de carrito y catálogo, usar el footer del mockup del catálogo (gris oscuro)
   if (variant === "default" || variant === "checkout") {
     return (
-      <footer className="bg-inverse-surface text-on-primary-fixed w-full py-lg px-lg border-t border-inverse-surface">
-        <div className="max-w-container-max mx-auto w-full flex flex-col md:flex-row justify-between gap-lg">
-          <div className="space-y-sm">
-            <span className="font-headline-md text-headline-md text-surface block">
+      <footer className="bg-inverse-surface w-full py-md px-md border-t border-inverse-surface mt-auto">
+        <div className="max-w-container-max mx-auto w-full flex flex-col md:flex-row justify-between gap-md">
+          <div className="space-y-xs">
+            <span className="font-label-lg text-gray-400 block text-sm">
               Super Carnes La Victoriana
             </span>
-            <div className="flex gap-md">
+            <div className="flex gap-sm">
               <MaterialIcon
                 name="face_nod"
-                className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+                className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+                size="sm"
               />
               <MaterialIcon
                 name="public"
-                className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+                className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+                size="sm"
               />
               <MaterialIcon
                 name="mail"
-                className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+                className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+                size="sm"
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-lg">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-md">
             <div className="space-y-xs">
-              <h4 className="font-label-md text-primary-fixed mb-sm">Información de la Tienda</h4>
-              <span className="block text-surface-variant font-body-md">
+              <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Información de la Tienda</h4>
+              <span className="block text-gray-400 text-xs">
                 Horarios: 8AM - 8PM
               </span>
-              <span className="block text-surface-variant font-body-md">
+              <span className="block text-gray-400 text-xs">
                 Ubicación: Calle Principal 123
               </span>
             </div>
             <div className="space-y-xs">
-              <h4 className="font-label-md text-primary-fixed mb-sm">Políticas</h4>
-              <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
+              <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Políticas</h4>
+              <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
                 Política de Envíos
               </a>
-              <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
+              <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
                 Política de Privacidad
               </a>
             </div>
             <div className="space-y-xs">
-              <h4 className="font-label-md text-primary-fixed mb-sm">Soporte</h4>
-              <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
+              <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Soporte</h4>
+              <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
                 Contactar Soporte
               </a>
-              <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
+              <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
                 Estado del Pedido
               </a>
             </div>
           </div>
         </div>
-        <div className="max-w-container-max mx-auto w-full border-t border-secondary-fixed-dim/20 mt-lg pt-md flex flex-col md:flex-row justify-between gap-md">
-          <p className="font-body-md text-surface-variant/70 text-caption">
+        <div className="max-w-container-max mx-auto w-full border-t border-gray-700 mt-md pt-sm flex flex-col md:flex-row justify-between gap-sm">
+          <p className="font-body-sm text-gray-400 text-xs">
             © 2024 Super Carnes La Victoriana. Carnicería Premium.
           </p>
-          <div className="flex gap-lg">
-            <span className="text-surface-variant/70 text-caption">
+          <div className="flex gap-md">
+            <span className="text-gray-400 text-xs">
               Elaborado por Carniceros Maestros
             </span>
-            <span className="text-surface-variant/70 text-caption">
+            <span className="text-gray-400 text-xs">
               Certificado ISO 22000
             </span>
           </div>
@@ -82,31 +83,31 @@ export default function Footer({ variant = "default" }: FooterProps) {
 
   if (variant === "profile") {
     return (
-      <footer className="bg-surface-container-highest border-t border-outline-variant full-width mt-xl">
-        <div className="flex flex-col md:flex-row justify-between items-center px-lg py-xl max-w-container-max mx-auto w-full">
-          <div className="mb-md md:mb-0">
-            <div className="text-headline-lg font-headline-lg text-primary">
+      <footer className="bg-surface-container-highest border-t border-outline-variant full-width mt-auto py-md px-md">
+        <div className="flex flex-col md:flex-row justify-between items-center max-w-container-max mx-auto w-full">
+          <div className="mb-sm md:mb-0">
+            <div className="text-label-lg font-label-lg text-gray-400 text-sm">
               Super Carnes
             </div>
-            <p className="text-caption text-on-surface-variant mt-2">
-              © 2024 Super Carnes Atelier. All Rights Reserved.
+            <p className="text-xs text-gray-400 mt-1">
+              © 2024 Super Carnes Atelier. Todos los derechos reservados.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-md lg:gap-lg">
-            <a className="text-on-surface-variant hover:text-primary transition-colors text-body-md font-body-md" href="#">
-              Sustainability
+          <div className="flex flex-wrap justify-center gap-sm">
+            <a className="text-gray-400 hover:text-gray-300 transition-colors text-xs" href="#">
+              Sostenibilidad
             </a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors text-body-md font-body-md" href="#">
-              Wholesale
+            <a className="text-gray-400 hover:text-gray-300 transition-colors text-xs" href="#">
+              Mayorista
             </a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors text-body-md font-body-md" href="#">
-              Shipping Policy
+            <a className="text-gray-400 hover:text-gray-300 transition-colors text-xs" href="#">
+              Política de Envíos
             </a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors text-body-md font-body-md" href="#">
-              Terms of Service
+            <a className="text-gray-400 hover:text-gray-300 transition-colors text-xs" href="#">
+              Términos de Servicio
             </a>
-            <a className="text-on-surface-variant hover:text-primary transition-colors text-body-md font-body-md" href="#">
-              Contact
+            <a className="text-gray-400 hover:text-gray-300 transition-colors text-xs" href="#">
+              Contacto
             </a>
           </div>
         </div>
@@ -116,48 +117,48 @@ export default function Footer({ variant = "default" }: FooterProps) {
 
   if (variant === "tracking") {
     return (
-      <footer className="w-full py-xl px-lg flex flex-col md:flex-row justify-between items-start gap-lg bg-inverse-surface dark:bg-surface-container-lowest text-on-primary-fixed">
-        <div className="flex flex-col gap-md">
-          <span className="font-headline-md text-headline-md text-surface">
+      <footer className="w-full py-md px-md flex flex-col md:flex-row justify-between items-start gap-md bg-inverse-surface dark:bg-surface-container-lowest mt-auto">
+        <div className="flex flex-col gap-sm">
+          <span className="font-label-lg text-gray-400 text-sm">
             Super Carnes
           </span>
-          <p className="font-body-md text-body-md text-surface-variant dark:text-on-surface-variant max-w-xs">
-            © 2024 Super Carnes. Premium Butcher Atelier. Tradición y excelencia en
+          <p className="font-body-sm text-gray-400 max-w-xs text-xs">
+            © 2024 Super Carnes. Carnicería Premium. Tradición y excelencia en
             cada corte.
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-xl">
-          <div className="flex flex-col gap-sm">
-            <span className="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-tighter">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-md">
+          <div className="flex flex-col gap-xs">
+            <span className="font-label-sm text-gray-400 uppercase tracking-tighter text-xs">
               Horarios
             </span>
-            <span className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all cursor-pointer">
+            <span className="text-gray-400 hover:text-gray-300 underline transition-all cursor-pointer text-xs">
               Lunes a Sábado: 8AM - 8PM
             </span>
-            <span className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all cursor-pointer">
+            <span className="text-gray-400 hover:text-gray-300 underline transition-all cursor-pointer text-xs">
               Domingo: 9AM - 4PM
             </span>
           </div>
-          <div className="flex flex-col gap-sm">
-            <span className="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-tighter">
+          <div className="flex flex-col gap-xs">
+            <span className="font-label-sm text-gray-400 uppercase tracking-tighter text-xs">
               Legal
             </span>
-            <a className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all" href="#">
-              Shipping Policy
+            <a className="text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Política de Envíos
             </a>
-            <a className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all" href="#">
-              Privacy Policy
+            <a className="text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Política de Privacidad
             </a>
           </div>
-          <div className="flex flex-col gap-sm">
-            <span className="font-label-md text-label-md text-primary-fixed-dim uppercase tracking-tighter">
+          <div className="flex flex-col gap-xs">
+            <span className="font-label-sm text-gray-400 uppercase tracking-tighter text-xs">
               Ayuda
             </span>
-            <a className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all" href="#">
-              Contact Support
+            <a className="text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Contactar Soporte
             </a>
-            <a className="text-surface-variant dark:text-on-surface-variant hover:text-primary-fixed-dim underline transition-all" href="#">
-              FAQ
+            <a className="text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Preguntas Frecuentes
             </a>
           </div>
         </div>
@@ -166,67 +167,70 @@ export default function Footer({ variant = "default" }: FooterProps) {
   }
 
   return (
-    <footer className="bg-inverse-surface dark:bg-surface-container-lowest text-on-primary-fixed w-full py-xl px-lg flex flex-col md:flex-row justify-between items-start gap-lg border-t border-inverse-surface">
-      <div className="max-w-container-max mx-auto w-full flex flex-col md:flex-row justify-between gap-xl">
-        <div className="space-y-md">
-          <span className="font-headline-md text-headline-md text-surface block">
+    <footer className="bg-inverse-surface dark:bg-surface-container-lowest w-full py-md px-md flex flex-col md:flex-row justify-between items-start gap-md border-t border-inverse-surface mt-auto">
+      <div className="max-w-container-max mx-auto w-full flex flex-col md:flex-row justify-between gap-md">
+        <div className="space-y-sm">
+          <span className="font-label-lg text-gray-400 block text-sm">
             Super Carnes
           </span>
-          <div className="flex gap-md">
+          <div className="flex gap-sm">
             <MaterialIcon
               name="face_nod"
-              className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+              className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+              size="sm"
             />
             <MaterialIcon
               name="public"
-              className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+              className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+              size="sm"
             />
             <MaterialIcon
               name="mail"
-              className="text-surface cursor-pointer hover:text-primary-fixed-dim transition-all"
+              className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
+              size="sm"
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-xl">
-          <div className="space-y-sm">
-            <h4 className="font-label-md text-primary-fixed mb-md">Store Info</h4>
-            <span className="block text-surface-variant font-body-md">
-              Store Hours: 8AM - 8PM
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-md">
+          <div className="space-y-xs">
+            <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Información de la Tienda</h4>
+            <span className="block text-gray-400 text-xs">
+              Horarios: 8AM - 8PM
             </span>
-            <span className="block text-surface-variant font-body-md">
-              Location: 123 Prime Cut Blvd
+            <span className="block text-gray-400 text-xs">
+              Ubicación: Calle Principal 123
             </span>
           </div>
-          <div className="space-y-sm">
-            <h4 className="font-label-md text-primary-fixed mb-md">Policies</h4>
-            <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
-              Shipping Policy
+          <div className="space-y-xs">
+            <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Políticas</h4>
+            <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Política de Envíos
             </a>
-            <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
-              Privacy Policy
+            <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Política de Privacidad
             </a>
           </div>
-          <div className="space-y-sm">
-            <h4 className="font-label-md text-primary-fixed mb-md">Support</h4>
-            <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
-              Contact Support
+          <div className="space-y-xs">
+            <h4 className="font-label-sm text-gray-400 mb-xs text-xs">Soporte</h4>
+            <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Contactar Soporte
             </a>
-            <a className="block text-surface-variant hover:text-primary-fixed-dim underline transition-all font-body-md" href="#">
-              Order Status
+            <a className="block text-gray-400 hover:text-gray-300 underline transition-all text-xs" href="#">
+              Estado del Pedido
             </a>
           </div>
         </div>
       </div>
-      <div className="max-w-container-max mx-auto w-full border-t border-secondary-fixed-dim/20 mt-xl pt-lg flex flex-col md:flex-row justify-between gap-md">
-        <p className="font-body-md text-surface-variant/70 text-caption">
-          © 2024 Super Carnes. Premium Butcher Atelier.
+      <div className="max-w-container-max mx-auto w-full border-t border-gray-700 mt-md pt-sm flex flex-col md:flex-row justify-between gap-sm">
+        <p className="font-body-sm text-gray-400 text-xs">
+          © 2024 Super Carnes. Carnicería Premium.
         </p>
-        <div className="flex gap-lg">
-          <span className="text-surface-variant/70 text-caption">
-            Curated by Master Butchers
+        <div className="flex gap-md">
+          <span className="text-gray-400 text-xs">
+            Elaborado por Carniceros Maestros
           </span>
-          <span className="text-surface-variant/70 text-caption">
-            ISO 22000 Certified
+          <span className="text-gray-400 text-xs">
+            Certificado ISO 22000
           </span>
         </div>
       </div>

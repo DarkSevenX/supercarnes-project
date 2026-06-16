@@ -30,7 +30,12 @@ export default function TopNavBar({
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/?search=${encodeURIComponent(search.trim())}`);
+      // Actualizar la URL sin recargar la página
+      const params = new URLSearchParams(window.location.search);
+      params.set("search", search.trim());
+      params.delete("page");
+      window.history.replaceState(null, "", `/?${params.toString()}`);
+      router.refresh(); // Forzar re-render del componente ClientCatalog
     }
   };
 
@@ -73,16 +78,33 @@ export default function TopNavBar({
               className="relative hidden lg:block"
             >
               <input
-                className="bg-surface-container-low border-none rounded-full px-lg py-xs text-body-md w-64 focus:ring-1 focus:ring-primary"
+                className="bg-surface-container-low border-none rounded-full pl-lg pr-10 py-xs text-body-md w-64 focus:ring-1 focus:ring-primary"
                 placeholder="Buscar..."
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <MaterialIcon
-                name="search"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary"
-              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete("search");
+                    window.history.replaceState(null, "", `/?${params.toString()}`);
+                    router.refresh();
+                  }}
+                  className="absolute right-10 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
+                >
+                  <MaterialIcon name="close" size="sm" />
+                </button>
+              )}
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
+              >
+                <MaterialIcon name="search" />
+              </button>
             </form>
           )}
           <Link

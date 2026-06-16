@@ -1,69 +1,80 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
-import { CATEGORIES, CUT_TYPES, GRADES } from "@/lib/utils";
+import { useRouter, usePathname } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
+import { CATEGORIES, CUT_TYPES } from "@/lib/utils";
 
 export default function CatalogFilters() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [categories, setCategories] = useState<string[]>(() => {
-    const cat = searchParams.get("category");
-    return cat ? cat.split(",") : ["Beef & Veal"];
+  const pathname = usePathname();
+  
+  // Estado local sincronizado con la URL
+  const [filters, setFilters] = useState({
+    categories: [""],
+    cuts: ["Steak"],
+    maxPrice: 5000000
   });
-  const [cuts, setCuts] = useState<string[]>(() => {
-    const cut = searchParams.get("cut");
-    return cut ? cut.split(",") : ["Steak"];
-  });
-  const [grade, setGrade] = useState(searchParams.get("grade") ?? "");
-  const [maxPrice, setMaxPrice] = useState(
-    Number(searchParams.get("maxPrice") ?? 5000000),
-  );
 
-  const applyFilters = useCallback(
-    (updates: {
-      categories?: string[];
-      cuts?: string[];
-      grade?: string;
-      maxPrice?: number;
-    }) => {
-      const params = new URLSearchParams(searchParams.toString());
-      const cats = updates.categories ?? categories;
-      const cutList = updates.cuts ?? cuts;
-      const g = updates.grade ?? grade;
-      const price = updates.maxPrice ?? maxPrice;
+  // Sincronizar estado con la URL cuando cambia
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const params = new URLSearchParams(window.location.search);
+    const categoryParam = params.get("category");
+    const cutParam = params.get("cut");
+    const maxPriceParam = params.get("maxPrice");
 
-      if (cats.length) params.set("category", cats.join(","));
-      else params.delete("category");
-      if (cutList.length) params.set("cut", cutList.join(","));
-      else params.delete("cut");
-      if (g) params.set("grade", g);
-      else params.delete("grade");
-      if (price < 5000000) params.set("maxPrice", String(price));
-      else params.delete("maxPrice");
-      params.delete("page");
+    setFilters({
+      categories: categoryParam ? categoryParam.split(",") : ["Beef & Veal"],
+      cuts: cutParam ? cutParam.split(",") : ["Steak"],
+      maxPrice: maxPriceParam ? Number(maxPriceParam) : 5000000
+    });
+  }, []); // Solo se ejecuta una vez al montar
 
-      router.push(`/?${params.toString()}`);
-    },
-    [categories, cuts, grade, maxPrice, router, searchParams],
-  );
+  // Función para actualizar la URL y el estado
+  const updateFilters = useCallback((newFilters: Partial<typeof filters>) => {
+    const updated = { ...filters, ...newFilters };
+    setFilters(updated);
+    
+    const params = new URLSearchParams();
+    
+    if (updated.categories.length) {
+      params.set("category", updated.categories.join(","));
+    }
+    
+    if (updated.cuts.length) {
+      params.set("cut", updated.cuts.join(","));
+    }
+    
+    if (updated.maxPrice < 5000000) {
+      params.set("maxPrice", String(updated.maxPrice));
+    }
+    
+    // Usar replaceState para cambiar la URL sin recargar la página
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    window.history.replaceState(null, "", newUrl);
+    
+    // Forzar un refresh del router
+    router.refresh();
+  }, [filters, pathname, router]);
 
-  const toggleCategory = (cat: string) => {
-    const next = categories.includes(cat)
-      ? categories.filter((c) => c !== cat)
-      : [...categories, cat];
-    setCategories(next);
-    applyFilters({ categories: next });
-  };
+  const toggleCategory = useCallback((cat: string) => {
+    const next = filters.categories.includes(cat)
+      ? filters.categories.filter((c) => c !== cat)
+      : [...filters.categories, cat];
+    updateFilters({ categories: next });
+  }, [filters.categories, updateFilters]);
 
-  const toggleCut = (cut: string) => {
-    const next = cuts.includes(cut)
-      ? cuts.filter((c) => c !== cut)
-      : [...cuts, cut];
-    setCuts(next);
-    applyFilters({ cuts: next });
-  };
+  const toggleCut = useCallback((cut: string) => {
+    const next = filters.cuts.includes(cut)
+      ? filters.cuts.filter((c) => c !== cut)
+      : [...filters.cuts, cut];
+    updateFilters({ cuts: next });
+  }, [filters.cuts, updateFilters]);
+
+  const handlePriceChange = useCallback((price: number) => {
+    updateFilters({ maxPrice: price });
+  }, [updateFilters]);
 
   return (
     <aside className="w-full lg:w-64 flex-shrink-0">
@@ -77,14 +88,14 @@ export default function CatalogFilters() {
               <li key={cat}>
                 <label className="flex items-center gap-sm cursor-pointer group">
                   <input
-                    checked={categories.includes(cat)}
+                    checked={filters.categories.includes(cat)}
                     onChange={() => toggleCategory(cat)}
                     className="rounded-sm border-secondary-fixed-dim text-primary focus:ring-primary"
                     type="checkbox"
                   />
                   <span
                     className={`text-body-md transition-colors ${
-                      categories.includes(cat)
+                      filters.categories.includes(cat)
                         ? "text-on-surface group-hover:text-primary"
                         : "text-secondary group-hover:text-primary"
                     }`}
@@ -108,7 +119,7 @@ export default function CatalogFilters() {
                 type="button"
                 onClick={() => toggleCut(cut)}
                 className={
-                  cuts.includes(cut)
+                  filters.cuts.includes(cut)
                     ? "bg-primary-container text-on-primary-container px-sm py-xs rounded-lg text-caption font-semibold cursor-pointer"
                     : "bg-surface-container text-on-surface-variant px-sm py-xs rounded-lg text-caption font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer"
                 }
@@ -128,43 +139,14 @@ export default function CatalogFilters() {
             type="range"
             min={0}
             max={5000000}
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(Number(e.target.value))}
-            onMouseUp={() => applyFilters({ maxPrice })}
-            onTouchEnd={() => applyFilters({ maxPrice })}
+            value={filters.maxPrice}
+            onChange={(e) => handlePriceChange(Number(e.target.value))}
           />
           <div className="flex justify-between mt-sm text-caption text-secondary">
             <span>$0</span>
             <span>$5.000.000+</span>
           </div>
         </div>
-
-        {/* <div>
-          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
-            Grado de Carne
-          </h3>
-          <ul className="space-y-sm">
-            {GRADES.map((g) => (
-              <li key={g}>
-                <label className="flex items-center gap-sm cursor-pointer group">
-                  <input
-                    type="radio"
-                    name="grade"
-                    checked={grade === g}
-                    onChange={() => {
-                      setGrade(g);
-                      applyFilters({ grade: g });
-                    }}
-                    className="text-primary focus:ring-primary border-secondary-fixed-dim"
-                  />
-                  <span className="text-body-md text-secondary group-hover:text-primary">
-                    {g}
-                  </span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </div> */}
       </div>
     </aside>
   );

@@ -20,19 +20,11 @@ export default async function CarritoPage() {
   const total = subtotal + shipping;
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <TopNavBar cartCount={cartCount} showSearch={false} />
-      <main className="pt-20 pb-xl max-w-container-max mx-auto px-lg">
-        {/* <header className="mb-lg">
-          <h1 className="font-display-lg text-display-lg text-on-surface mb-sm">
-            Finalizar Compra Artesanal
-          </h1>
-          <p className="font-body-lg text-body-lg text-secondary">
-            Finaliza tu selección de cortes premium con envío refrigerado.
-          </p>
-        </header> */}
+      <main className="flex-grow pt-20 pb-xl max-w-container-max mx-auto px-lg">
         {items.length === 0 ? (
-          <div className="text-center py-xl bg-surface-container-lowest rounded-xl">
+          <div className="text-center py-xl bg-surface-container-lowest rounded-xl flex flex-col justify-center items-center min-h-[calc(100vh-20rem)]">
             <p className="font-body-lg text-secondary mb-md">
               Tu carrito está vacío.
             </p>
@@ -53,6 +45,6 @@ export default async function CarritoPage() {
         )}
       </main>
       <Footer variant="default" />
-    </>
+    </div>
   );
 }

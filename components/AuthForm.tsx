@@ -138,7 +138,7 @@ export default function AuthForm() {
                       Correo Electrónico
                     </label>
                     <input
-                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-0 focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
+                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="login-email"
                       placeholder="ejemplo@atelier.com"
                       type="email"
@@ -156,7 +156,7 @@ export default function AuthForm() {
                       Contraseña
                     </label>
                     <input
-                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-0 focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
+                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="login-password"
                       placeholder="••••••••"
                       type="password"
@@ -196,7 +196,7 @@ export default function AuthForm() {
                       Nombre Completo
                     </label>
                     <input
-                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-0 focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
+                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="reg-name"
                       placeholder="Su nombre"
                       type="text"
@@ -211,7 +211,7 @@ export default function AuthForm() {
                       Correo Electrónico
                     </label>
                     <input
-                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-0 focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
+                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="reg-email"
                       placeholder="ejemplo@atelier.com"
                       type="email"
@@ -226,7 +226,7 @@ export default function AuthForm() {
                       Contraseña
                     </label>
                     <input
-                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-0 focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
+                      className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="reg-password"
                       placeholder="Mínimo 8 caracteres"
                       type="password"

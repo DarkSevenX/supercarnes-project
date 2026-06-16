@@ -72,9 +72,9 @@ export default async function PerfilPage() {
     .where(eq(paymentMethods.userId, session.userId));
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <TopNavBar activeLink="perfil" cartCount={cartCount} />
-      <main className="pt-24 pb-xl max-w-container-max mx-auto px-lg">
+      <main className="flex-grow pt-24 pb-xl max-w-container-max mx-auto px-lg">
         <ProfileContent
           user={user}
           orders={ordersWithMeta}
@@ -83,6 +83,6 @@ export default async function PerfilPage() {
         />
       </main>
       <Footer variant="profile" />
-    </>
+    </div>
   );
 }
