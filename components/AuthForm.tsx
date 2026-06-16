@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition, useState } from "react";
+import { loginAction, registerAction } from "@/lib/actions/auth-actions";
 import MaterialIcon from "./MaterialIcon";
 
 export default function AuthForm() {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -18,60 +17,37 @@ export default function AuthForm() {
   const [regPassword, setRegPassword] = useState("");
   const [terms, setTerms] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+    startTransition(async () => {
+      const result = await loginAction({
+        email: loginEmail,
+        password: loginPassword,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Error al iniciar sesión");
-        return;
+      if (result && !result.success) {
+        setError(result.error);
       }
-      router.push(data.role === "admin" ? "/admin" : "/perfil");
-      router.refresh();
-    } catch {
-      setError("Error de conexión");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!terms) {
       setError("Debe aceptar los términos de servicio");
       return;
     }
-    setLoading(true);
     setError("");
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: regName,
-          email: regEmail,
-          password: regPassword,
-        }),
+    startTransition(async () => {
+      const result = await registerAction({
+        name: regName,
+        email: regEmail,
+        password: regPassword,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Error al registrarse");
-        return;
+      if (result && !result.success) {
+        setError(result.error);
       }
-      router.push("/perfil");
-      router.refresh();
-    } catch {
-      setError("Error de conexión");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   return (
@@ -173,10 +149,10 @@ export default function AuthForm() {
                   </div>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isPending}
                     className="w-full bg-primary-container text-on-primary py-md rounded-lg font-label-md tracking-wide hover:opacity-90 transition-opacity active:scale-[0.98] transform mt-md disabled:opacity-60"
                   >
-                    ACCEDER AL ATELIER
+                    {isPending ? "PROCESANDO..." : "ACCEDER AL ATELIER"}
                   </button>
                 </form>
               </div>
@@ -259,10 +235,10 @@ export default function AuthForm() {
                   </div>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isPending}
                     className="w-full bg-primary-container text-on-primary py-md rounded-lg font-label-md tracking-wide hover:opacity-90 transition-opacity active:scale-[0.98] transform mt-md disabled:opacity-60"
                   >
-                    REGISTRAR CUENTA
+                    {isPending ? "PROCESANDO..." : "REGISTRAR CUENTA"}
                   </button>
                 </form>
               </div>

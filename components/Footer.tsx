@@ -20,17 +20,14 @@ export default function Footer({ variant = "default" }: FooterProps) {
               <MaterialIcon
                 name="face_nod"
                 className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-                size="sm"
               />
               <MaterialIcon
                 name="public"
                 className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-                size="sm"
               />
               <MaterialIcon
                 name="mail"
                 className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-                size="sm"
               />
             </div>
           </div>
@@ -177,17 +174,14 @@ export default function Footer({ variant = "default" }: FooterProps) {
             <MaterialIcon
               name="face_nod"
               className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-              size="sm"
             />
             <MaterialIcon
               name="public"
               className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-              size="sm"
             />
             <MaterialIcon
               name="mail"
               className="text-gray-400 cursor-pointer hover:text-gray-300 transition-all text-sm"
-              size="sm"
             />
           </div>
         </div>

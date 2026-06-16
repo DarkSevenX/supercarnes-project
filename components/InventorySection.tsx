@@ -5,7 +5,7 @@ import { useState } from "react";
 import { formatCOP } from "@/lib/utils";
 import MaterialIcon from "./MaterialIcon";
 
-type Product = {
+type AdminProduct = {
   id: number;
   name: string;
   description: string;
@@ -15,13 +15,13 @@ type Product = {
   priceUnit: string;
   imageUrl: string;
   stockKg: number;
-  badges: string | null;
+  badges?: string | null;
 };
 
 type InventorySectionProps = {
-  products: Product[];
-  onEditProduct: (product: Product) => void;
-  onDeleteProduct: (id: number) => Promise<void>;
+  products: AdminProduct[];
+  onEditProduct: (product: AdminProduct) => void;
+  onDeleteProduct: (id: number) => void;
   loading: boolean;
 };
 

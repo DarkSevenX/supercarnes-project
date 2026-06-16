@@ -96,7 +96,7 @@ export default function TopNavBar({
                   }}
                   className="absolute right-10 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
                 >
-                  <MaterialIcon name="close" size="sm" />
+                  <MaterialIcon name="close" />
                 </button>
               )}
               <button

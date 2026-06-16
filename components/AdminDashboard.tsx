@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatCOP, CATEGORIES } from "@/lib/utils";
+import { logoutAction } from "@/lib/actions/auth-actions";
+import { createProduct, updateProduct, deleteProduct, updateOrderStatus } from "@/lib/actions/admin-actions";
 import MaterialIcon from "./MaterialIcon";
 import ProductFormModal from "./ProductFormModal";
 import InventorySection from "./InventorySection";
@@ -49,26 +51,22 @@ export default function AdminDashboard({
   products,
 }: AdminDashboardProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [toast, setToast] = useState({ show: false, message: "" });
   const [activeNav, setActiveNav] = useState("dashboard");
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [currentProducts, setCurrentProducts] = useState<AdminProduct[]>(products);
-  const [loading, setLoading] = useState(false);
 
   const showToast = (message: string = "Inventario actualizado exitosamente.") => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  const handleLogout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/auth";
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      showToast("Error al cerrar sesión");
-    }
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logoutAction();
+    });
   };
 
   const handleAddProduct = () => {
@@ -81,68 +79,45 @@ export default function AdminDashboard({
     setShowProductModal(true);
   };
 
-  const handleDeleteProduct = async (id: number) => {
+  const handleDeleteProduct = (id: number) => {
     if (!confirm("¿Estás seguro de eliminar este producto?")) return;
 
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
+    startTransition(async () => {
+      try {
+        await deleteProduct(id);
         setCurrentProducts(currentProducts.filter(p => p.id !== id));
         showToast("Producto eliminado exitosamente");
-      } else {
+      } catch (error) {
+        console.error("Error al eliminar producto:", error);
         showToast("Error al eliminar producto");
       }
-    } catch (error) {
-      console.error("Error al eliminar producto:", error);
-      showToast("Error al eliminar producto");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
-  const handleSubmitProduct = async (productData: any) => {
-    try {
-      setLoading(true);
-      const url = editingProduct 
-        ? `/api/admin/products/${editingProduct.id}`
-        : "/api/admin/products";
-      
-      const method = editingProduct ? "PATCH" : "POST";
-      
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productData),
-      });
-
-      if (response.ok) {
-        const updatedProduct = await response.json();
-        
+  const handleSubmitProduct = (productData: any) => {
+    startTransition(async () => {
+      try {
         if (editingProduct) {
+          await updateProduct(editingProduct.id, productData);
           setCurrentProducts(currentProducts.map(p => 
-            p.id === editingProduct.id ? { ...p, ...updatedProduct } : p
+            p.id === editingProduct.id ? { ...p, ...productData } : p
           ));
           showToast("Producto actualizado exitosamente");
         } else {
-          setCurrentProducts([...currentProducts, updatedProduct]);
+          const result = await createProduct(productData);
+          if (result.success && result.product) {
+            setCurrentProducts([...currentProducts, result.product as any]);
+          }
           showToast("Producto creado exitosamente");
         }
         
         setShowProductModal(false);
         setEditingProduct(null);
-      } else {
+      } catch (error) {
+        console.error("Error al guardar producto:", error);
         showToast("Error al guardar producto");
       }
-    } catch (error) {
-      console.error("Error al guardar producto:", error);
-      showToast("Error al guardar producto");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const handleRefresh = () => {
@@ -320,27 +295,16 @@ export default function AdminDashboard({
     { segment: "Nuevos Clientes", count: 35, revenue: 875000, avgOrderValue: 25000 },
   ];
 
-  const handleUpdateOrderStatus = async (orderId: number, newStatus: string) => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (response.ok) {
+  const handleUpdateOrderStatus = (orderId: number, newStatus: string) => {
+    startTransition(async () => {
+      try {
+        await updateOrderStatus(orderId, newStatus);
         showToast(`Estado del pedido actualizado a: ${newStatus}`);
-        // En un proyecto real, actualizarías el estado local aquí
-      } else {
+      } catch (error) {
+        console.error("Error al actualizar estado:", error);
         showToast("Error al actualizar estado del pedido");
       }
-    } catch (error) {
-      console.error("Error al actualizar estado:", error);
-      showToast("Error al actualizar estado del pedido");
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const renderContent = () => {
@@ -351,7 +315,7 @@ export default function AdminDashboard({
             products={currentProducts}
             onEditProduct={handleEditProduct}
             onDeleteProduct={handleDeleteProduct}
-            loading={loading}
+            loading={isPending}
           />
         );
       
@@ -369,7 +333,7 @@ export default function AdminDashboard({
             orders={ordersData}
             orderItems={orderItemsData}
             onUpdateStatus={handleUpdateOrderStatus}
-            loading={loading}
+            loading={isPending}
           />
         );
       
@@ -470,7 +434,7 @@ export default function AdminDashboard({
                       type="button"
                       onClick={handleRefresh}
                       className="bg-surface-container text-on-surface px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-surface-container-highest transition-colors flex items-center gap-sm"
-                      disabled={loading}
+                      disabled={isPending}
                     >
                       <MaterialIcon name="refresh" className="text-[20px]" />
                       Actualizar
@@ -479,7 +443,7 @@ export default function AdminDashboard({
                       type="button"
                       onClick={handleAddProduct}
                       className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm"
-                      disabled={loading}
+                      disabled={isPending}
                     >
                       <MaterialIcon name="add" className="text-[20px]" /> Agregar Producto
                     </button>
@@ -560,7 +524,7 @@ export default function AdminDashboard({
                               type="button"
                               onClick={() => handleEditProduct(product)}
                               className="text-secondary hover:text-primary transition-colors"
-                              disabled={loading}
+                              disabled={isPending}
                             >
                               <MaterialIcon name="edit" />
                             </button>
@@ -568,7 +532,7 @@ export default function AdminDashboard({
                               type="button"
                               onClick={() => handleDeleteProduct(product.id)}
                               className="text-secondary hover:text-error transition-colors"
-                              disabled={loading}
+                              disabled={isPending}
                             >
                               <MaterialIcon name="delete" />
                             </button>
@@ -737,7 +701,8 @@ export default function AdminDashboard({
             <button
               type="button"
               onClick={handleLogout}
-              className="text-surface-variant hover:text-surface transition-colors p-2"
+              disabled={isPending}
+              className="text-surface-variant hover:text-surface transition-colors p-2 disabled:opacity-50"
               title="Cerrar sesión"
             >
               <MaterialIcon name="logout" />

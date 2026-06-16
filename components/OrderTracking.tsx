@@ -67,7 +67,7 @@ export default function OrderTracking({ order }: { order: OrderData }) {
 
   return (
     <>
-      <TopNavBar variant="tracking" activeLink="shop" />
+      <TopNavBar activeLink="shop" />
       <main className="pt-32 pb-24 px-lg max-w-container-max mx-auto">
         <div className="mb-xl text-center md:text-left">
           <span className="font-label-md text-label-md uppercase tracking-widest text-primary mb-sm block">

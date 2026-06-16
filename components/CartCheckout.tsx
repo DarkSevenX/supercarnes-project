@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { formatCOP } from "@/lib/utils";
+import { removeCartItem, updateCartItem } from "@/lib/actions/cart-actions";
+import { createOrder } from "@/lib/actions/order-actions";
 import MaterialIcon from "./MaterialIcon";
 
 type CartItem = {
@@ -33,9 +34,8 @@ export default function CartCheckout({
   shipping,
   total,
 }: CartCheckoutProps) {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"shipping" | "payment" | "review">("shipping");
-  const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [form, setForm] = useState({
     firstName: "",
@@ -46,40 +46,27 @@ export default function CartCheckout({
     phone: "",
   });
 
-  const updateQuantity = async (id: number, quantity: number) => {
+  const handleUpdateQuantity = (id: number, quantity: number) => {
     if (quantity < 1) return;
-    await fetch(`/api/cart/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ quantity }),
+    startTransition(async () => {
+      await updateCartItem(id, quantity);
     });
-    router.refresh();
   };
 
-  const removeItem = async (id: number) => {
-    await fetch(`/api/cart/${id}`, { method: "DELETE" });
-    router.refresh();
+  const handleRemoveItem = (id: number) => {
+    startTransition(async () => {
+      await removeCartItem(id);
+    });
   };
 
-  const handleCheckout = async (e: React.FormEvent) => {
+  const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          paymentMethod,
-        }),
+    startTransition(async () => {
+      await createOrder({
+        ...form,
+        paymentMethod,
       });
-      const data = await res.json();
-      if (res.ok) {
-        router.push(`/pedido/${data.orderId}`);
-      }
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const badgeLabel = (item: CartItem) => {
@@ -142,24 +129,27 @@ export default function CartCheckout({
                     <div className="flex items-center border border-outline rounded-md">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="px-3 py-1 hover:bg-surface-variant transition-colors"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                        disabled={isPending}
+                        className="px-3 py-1 hover:bg-surface-variant transition-colors disabled:opacity-50"
                       >
                         <MaterialIcon name="remove" className="text-sm" />
                       </button>
                       <span className="px-4 font-bold">{item.quantity}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-3 py-1 hover:bg-surface-variant transition-colors"
+                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                        disabled={isPending}
+                        className="px-3 py-1 hover:bg-surface-variant transition-colors disabled:opacity-50"
                       >
                         <MaterialIcon name="add" className="text-sm" />
                       </button>
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeItem(item.id)}
-                      className="text-secondary hover:text-error transition-colors flex items-center gap-1"
+                      onClick={() => handleRemoveItem(item.id)}
+                      disabled={isPending}
+                      className="text-secondary hover:text-error transition-colors flex items-center gap-1 disabled:opacity-50"
                     >
                       <MaterialIcon name="delete" className="text-md" />
                       <span className="text-caption">Eliminar</span>
@@ -351,10 +341,10 @@ export default function CartCheckout({
             <div className="pt-lg">
               <button
                 type="submit"
-                disabled={loading || items.length === 0}
+                disabled={isPending || items.length === 0}
                 className="w-full bg-primary text-on-primary py-4 rounded-lg font-bold text-lg hover:bg-primary-container transition-all active:scale-95 shadow-md disabled:opacity-50"
               >
-                Pagar Ahora ({formatCOP(total)})
+                {isPending ? "Procesando..." : `Pagar Ahora (${formatCOP(total)})`}
               </button>
               <p className="text-[10px] text-center text-secondary mt-md flex items-center justify-center gap-2">
                 <MaterialIcon name="lock" className="text-xs" fill />

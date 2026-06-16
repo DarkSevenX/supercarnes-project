@@ -1,9 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTransition } from "react";
 import { parseBadges, formatCOP } from "@/lib/utils";
+import { addToCart } from "@/lib/actions/cart-actions";
 import MaterialIcon from "./MaterialIcon";
 
 type ProductCardProps = {
@@ -40,22 +40,13 @@ export default function ProductCard({
   imageUrl,
   badges,
 }: ProductCardProps) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const badgeList = parseBadges(badges);
 
-  const addToCart = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: id, quantity: 1 }),
-      });
-      if (res.ok) router.refresh();
-    } finally {
-      setLoading(false);
-    }
+  const handleAddToCart = () => {
+    startTransition(async () => {
+      await addToCart(id, 1);
+    });
   };
 
   return (
@@ -101,12 +92,12 @@ export default function ProductCard({
           </span>
           <button
             type="button"
-            onClick={addToCart}
-            disabled={loading}
+            onClick={handleAddToCart}
+            disabled={isPending}
             className="bg-inverse-surface text-on-secondary px-lg py-sm rounded-lg font-label-md hover:bg-primary transition-colors cursor-pointer active:scale-95 flex items-center gap-sm disabled:opacity-60"
           >
             <MaterialIcon name="shopping_basket" className="text-[18px]" />
-            Agregar
+            {isPending ? "..." : "Agregar"}
           </button>
         </div>
       </div>

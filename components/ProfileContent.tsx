@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 import { formatCOP, ORDER_STATUS_BADGE, ORDER_STATUS_LABELS } from "@/lib/utils";
+import { logoutAction } from "@/lib/actions/auth-actions";
 import MaterialIcon from "./MaterialIcon";
 
 type ProfileUser = {
@@ -55,12 +56,12 @@ export default function ProfileContent({
   addresses,
   payments,
 }: ProfileContentProps) {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/auth");
-    router.refresh();
+  const handleLogout = () => {
+    startTransition(async () => {
+      await logoutAction();
+    });
   };
 
   const formatDate = (dateStr: string) => {
@@ -116,10 +117,11 @@ export default function ProfileContent({
           <button
             type="button"
             onClick={handleLogout}
-            className="mt-xl w-full flex items-center justify-center gap-sm py-md px-lg text-primary border border-primary rounded-lg hover:bg-primary-fixed transition-colors font-label-md uppercase tracking-wider"
+            disabled={isPending}
+            className="mt-xl w-full flex items-center justify-center gap-sm py-md px-lg text-primary border border-primary rounded-lg hover:bg-primary-fixed transition-colors font-label-md uppercase tracking-wider disabled:opacity-50"
           >
             <MaterialIcon name="logout" />
-            Cerrar Sesión
+            {isPending ? "Cerrando..." : "Cerrar Sesión"}
           </button>
         </div>
 

@@ -1,22 +1,37 @@
-import { eq } from "drizzle-orm";
-import { NextRequest } from "next/server";
-import { ensureDb, jsonError } from "@/lib/api";
-import { getOrCreateCartSessionId, getSession } from "@/lib/auth";
-import { getCartItemsForUser } from "@/lib/cart-helpers";
-import { db } from "@/lib/db";
-import { cartItems, orderItems, orders, products, users } from "@/lib/db/schema";
+'use server'
 
-export async function POST(request: NextRequest) {
-  await ensureDb();
-  const session = await getSession();
-  if (!session) return jsonError("Debe iniciar sesión", 401);
+import { eq } from "drizzle-orm"
+import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { getOrCreateCartSessionId, getSession } from "@/lib/auth"
+import { getCartItemsForUser } from "@/lib/cart-helpers"
+import { db } from "@/lib/db"
+import { cartItems, orderItems, orders, users } from "@/lib/db/schema"
 
-  const cartSessionId = await getOrCreateCartSessionId();
-  const items = await getCartItemsForUser(session, cartSessionId);
+type CheckoutData = {
+  firstName: string
+  lastName: string
+  address: string
+  city: string
+  zip: string
+  phone: string
+  paymentMethod?: string
+}
 
-  if (!items.length) return jsonError("El carrito está vacío");
+export async function createOrder(data: CheckoutData) {
+  const session = await getSession()
+  
+  if (!session) {
+    return { success: false, error: "Debe iniciar sesión" }
+  }
 
-  const body = await request.json();
+  const cartSessionId = await getOrCreateCartSessionId()
+  const items = await getCartItemsForUser(session, cartSessionId)
+
+  if (!items.length) {
+    return { success: false, error: "El carrito está vacío" }
+  }
+
   const {
     firstName,
     lastName,
@@ -25,17 +40,18 @@ export async function POST(request: NextRequest) {
     zip,
     phone,
     paymentMethod = "card",
-  } = body;
+  } = data
 
   const subtotal = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
-  );
-  const shipping = 150;
-  const total = subtotal + shipping;
+  )
+  const shipping = 150
+  const total = subtotal + shipping
 
-  const orderNumber = `SC-${Date.now().toString().slice(-5)}`;
+  const orderNumber = `SC-${Date.now().toString().slice(-5)}`
 
+  // Crear orden
   const [order] = await db
     .insert(orders)
     .values({
@@ -68,8 +84,9 @@ export async function POST(request: NextRequest) {
         { status: "delivered", label: "Entregado", time: "Pendiente" },
       ]),
     })
-    .returning();
+    .returning()
 
+  // Crear items de la orden
   for (const item of items) {
     await db.insert(orderItems).values({
       orderId: order.id,
@@ -79,23 +96,29 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity,
       unitPrice: item.price,
       detail: item.category,
-    });
+    })
   }
 
-  await db.delete(cartItems).where(eq(cartItems.userId, session.userId));
+  // Limpiar carrito
+  await db.delete(cartItems).where(eq(cartItems.userId, session.userId))
 
+  // Actualizar puntos de lealtad
   const [user] = await db
     .select()
     .from(users)
     .where(eq(users.id, session.userId))
-    .limit(1);
+    .limit(1)
 
   if (user) {
     await db
       .update(users)
       .set({ loyaltyPoints: user.loyaltyPoints + Math.floor(total / 10) })
-      .where(eq(users.id, session.userId));
+      .where(eq(users.id, session.userId))
   }
 
-  return Response.json({ orderId: order.id, orderNumber: order.orderNumber });
+  revalidatePath('/carrito')
+  revalidatePath('/perfil')
+  
+  // Redirigir a la página del pedido
+  redirect(`/pedido/${order.id}`)
 }

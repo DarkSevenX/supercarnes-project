@@ -20,7 +20,7 @@ type ProductFormData = {
 type ProductFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ProductFormData) => Promise<void>;
+  onSubmit: (data: ProductFormData) => void;
   initialData?: Partial<ProductFormData>;
   title?: string;
 };
@@ -275,7 +275,7 @@ export default function ProductFormModal({
                     onClick={() => removeBadge(badge)}
                     className="text-on-primary-container hover:text-error"
                   >
-                    <MaterialIcon name="close" size="sm" />
+                    <MaterialIcon name="close" />
                   </button>
                 </span>
               ))}

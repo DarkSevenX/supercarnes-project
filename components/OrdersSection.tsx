@@ -29,7 +29,7 @@ type OrderItem = {
 type OrdersSectionProps = {
   orders: Order[];
   orderItems: Record<number, OrderItem[]>;
-  onUpdateStatus: (orderId: number, newStatus: string) => Promise<void>;
+  onUpdateStatus: (orderId: number, newStatus: string) => void;
   loading: boolean;
 };
 
