@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { getOrCreateCartSessionId, getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { cartItems, products } from "@/lib/db/schema"
-
+// primer cambio de alejo
 export async function addToCart(productId: number, quantity: number = 1) {
   const session = await getSession()
   const cartSessionId = await getOrCreateCartSessionId()
