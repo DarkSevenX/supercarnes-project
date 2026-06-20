@@ -8,6 +8,7 @@ import { formatCOP } from "@/lib/utils";
 import { removeCartItem, updateCartItem } from "@/lib/actions/cart-actions";
 import { createOrder } from "@/lib/actions/order-actions";
 import MaterialIcon from "./MaterialIcon";
+import BotonPagoWompi from "@/app/carrito/BotonPagoWompi"; // Importamos tu botón premium
 
 type CartItem = {
   id: number;
@@ -28,6 +29,7 @@ type CartCheckoutProps = {
   shipping: number;
   total: number;
   isLoggedIn: boolean;
+  orderReference: string; // RECIBIMOS LA PROP DE ALEJO PARA EVITAR EL ERROR ROJO
 };
 
 export default function CartCheckout({
@@ -36,16 +38,17 @@ export default function CartCheckout({
   shipping,
   total,
   isLoggedIn,
+  orderReference, // La declaramos aquí para usarla
 }: CartCheckoutProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"shipping" | "payment" | "review">("shipping");
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("wompi"); // Dejamos Wompi por defecto
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     address: "",
-    city: "",
+    city: "Montería", // Por defecto la tierra
     zip: "",
     phone: "",
   });
@@ -196,27 +199,24 @@ export default function CartCheckout({
             <button
               type="button"
               onClick={() => setStep("shipping")}
-              className={`text-caption tracking-widest uppercase ${
-                step === "shipping" ? "step-active" : "text-secondary hover:text-primary transition-colors"
-              }`}
+              className={`text-caption tracking-widest uppercase ${step === "shipping" ? "step-active" : "text-secondary hover:text-primary transition-colors"
+                }`}
             >
               1. Envío
             </button>
             <button
               type="button"
               onClick={() => setStep("payment")}
-              className={`text-caption tracking-widest uppercase ${
-                step === "payment" ? "step-active" : "text-secondary hover:text-primary transition-colors"
-              }`}
+              className={`text-caption tracking-widest uppercase ${step === "payment" ? "step-active" : "text-secondary hover:text-primary transition-colors"
+                }`}
             >
               2. Pago
             </button>
             <button
               type="button"
               onClick={() => setStep("review")}
-              className={`text-caption tracking-widest uppercase ${
-                step === "review" ? "step-active" : "text-secondary hover:text-primary transition-colors"
-              }`}
+              className={`text-caption tracking-widest uppercase ${step === "review" ? "step-active" : "text-secondary hover:text-primary transition-colors"
+                }`}
             >
               3. Revisión
             </button>
@@ -265,7 +265,7 @@ export default function CartCheckout({
                 </label>
                 <input
                   className="checkout-input"
-                  placeholder="Av. Paseo de la Reforma 123"
+                  placeholder="Calle 30 # 4-50"
                   type="text"
                   value={form.address}
                   onChange={(e) =>
@@ -281,7 +281,7 @@ export default function CartCheckout({
                   </label>
                   <input
                     className="checkout-input"
-                    placeholder="CDMX"
+                    placeholder="Montería"
                     type="text"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
@@ -294,7 +294,7 @@ export default function CartCheckout({
                   </label>
                   <input
                     className="checkout-input"
-                    placeholder="01234"
+                    placeholder="230001"
                     type="text"
                     value={form.zip}
                     onChange={(e) => setForm({ ...form, zip: e.target.value })}
@@ -308,7 +308,7 @@ export default function CartCheckout({
                 </label>
                 <input
                   className="checkout-input"
-                  placeholder="+52 55 1234 5678"
+                  placeholder="+57 300 123 4567"
                   type="tel"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -319,47 +319,32 @@ export default function CartCheckout({
 
             <div className="space-y-md pt-md border-t border-surface-container">
               <h3 className="font-label-md text-secondary uppercase tracking-widest">
-                Método de Pago
+                Método de Pago Local
               </h3>
               <div className="flex flex-col gap-sm">
-                <label className="flex items-center gap-md p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container transition-colors">
+                <label className="flex items-center gap-md p-md border border-primary rounded-lg cursor-pointer bg-surface-container-low transition-colors">
                   <input
-                    checked={paymentMethod === "card"}
-                    onChange={() => setPaymentMethod("card")}
+                    checked={paymentMethod === "wompi"}
+                    onChange={() => setPaymentMethod("wompi")}
                     className="w-4 h-4 text-primary focus:ring-primary rounded-sm"
                     name="payment"
                     type="radio"
                   />
-                  <span className="flex-grow font-bold">
-                    Tarjeta de Crédito / Débito
+                  <span className="flex-grow font-bold text-primary">
+                    Pasarela Colectiva Wompi (Nequi / Bancolombia)
                   </span>
-                  <MaterialIcon name="credit_card" className="text-secondary" />
-                </label>
-                <label className="flex items-center gap-md p-md border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container transition-colors">
-                  <input
-                    checked={paymentMethod === "spei"}
-                    onChange={() => setPaymentMethod("spei")}
-                    className="w-4 h-4 text-primary focus:ring-primary rounded-sm"
-                    name="payment"
-                    type="radio"
-                  />
-                  <span className="flex-grow font-bold">Transferencia SPEI</span>
-                  <MaterialIcon name="account_balance" className="text-secondary" />
+                  <MaterialIcon name="payments" className="text-primary" />
                 </label>
               </div>
             </div>
 
             <div className="pt-lg">
-              <button
-                type="submit"
-                disabled={isPending || items.length === 0}
-                className="w-full bg-primary text-on-primary py-4 rounded-lg font-bold text-lg hover:bg-primary-container transition-all active:scale-95 shadow-md disabled:opacity-50"
-              >
-                {isPending ? "Procesando..." : `Pagar Ahora (${formatCOP(total)})`}
-              </button>
+              {/* CAMBIO MÁGICO DE ALEJO: Inyectamos tu Botón inteligente dentro de la tarjeta */}
+              <BotonPagoWompi totalOrder={total} orderReference={orderReference} />
+
               <p className="text-[10px] text-center text-secondary mt-md flex items-center justify-center gap-2">
                 <MaterialIcon name="lock" className="text-xs" fill />
-                Transacción Encriptada y Segura SSL
+                Conexión segura certificada mediante Wompi Colombia
               </p>
             </div>
           </form>
