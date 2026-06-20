@@ -19,6 +19,7 @@ export default async function PerfilPage() {
   await ensureDb();
   const session = await getSession();
   if (!session) redirect("/auth");
+  if (session.role === "admin") redirect("/admin");
 
   const cartSessionId = await getCartSessionId();
   const cartCount = await getCartCount(session, cartSessionId);

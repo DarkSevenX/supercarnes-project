@@ -14,8 +14,6 @@ type TopNavBarProps = {
 
 const navLinks = [
   { key: "shop", label: "Tienda", href: "/" },
-  { key: "categories", label: "Categorías", href: "/" },
-  { key: "story", label: "Nuestra Historia", href: "/" },
   { key: "contact", label: "Contacto", href: "/" },
 ];
 

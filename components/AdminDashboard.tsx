@@ -3,9 +3,17 @@
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { formatCOP, CATEGORIES } from "@/lib/utils";
+import { formatCOP } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth-actions";
-import { createProduct, updateProduct, deleteProduct, updateOrderStatus } from "@/lib/actions/admin-actions";
+import { 
+  createProduct, 
+  updateProduct, 
+  deleteProduct, 
+  updateOrderStatus,
+  createCategoryAction,
+  updateCategoryAction,
+  deleteCategoryAction,
+} from "@/lib/actions/admin-actions";
 import MaterialIcon from "./MaterialIcon";
 import ProductFormModal from "./ProductFormModal";
 import InventorySection from "./InventorySection";
@@ -23,6 +31,12 @@ type AdminProduct = {
   priceUnit: string;
   imageUrl: string;
   stockKg: number;
+};
+
+type AdminCategory = {
+  id: number;
+  name: string;
+  slug: string;
 };
 
 type AdminStats = {
@@ -44,11 +58,13 @@ type AdminStats = {
 type AdminDashboardProps = {
   stats: AdminStats;
   products: AdminProduct[];
+  categories: AdminCategory[];
 };
 
 export default function AdminDashboard({
   stats,
   products,
+  categories,
 }: AdminDashboardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -57,6 +73,7 @@ export default function AdminDashboard({
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [currentProducts, setCurrentProducts] = useState<AdminProduct[]>(products);
+  const [currentCategories, setCurrentCategories] = useState<AdminCategory[]>(categories);
 
   const showToast = (message: string = "Inventario actualizado exitosamente.") => {
     setToast({ show: true, message });
@@ -66,6 +83,72 @@ export default function AdminDashboard({
   const handleLogout = () => {
     startTransition(async () => {
       await logoutAction();
+    });
+  };
+
+  const handleAddCategory = () => {
+    const name = prompt("Ingrese el nombre de la nueva categoría:");
+    if (!name || !name.trim()) return;
+
+    startTransition(async () => {
+      const result = await createCategoryAction(name.trim());
+      if (result.success && result.category) {
+        setCurrentCategories([...currentCategories, result.category]);
+        showToast("Categoría creada exitosamente");
+      } else {
+        showToast(result.error || "Error al crear la categoría");
+      }
+    });
+  };
+
+  const handleEditCategory = (category: AdminCategory) => {
+    const name = prompt("Ingrese el nuevo nombre para la categoría:", category.name);
+    if (!name || !name.trim() || name.trim() === category.name) return;
+
+    startTransition(async () => {
+      const result = await updateCategoryAction(category.id, name.trim());
+      if (result.success) {
+        const slug = name
+          .trim()
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "");
+
+        setCurrentCategories(currentCategories.map(c => 
+          c.id === category.id ? { ...c, name: name.trim(), slug } : c
+        ));
+        
+        // Actualizar localmente las categorías de los productos
+        setCurrentProducts(currentProducts.map(p => 
+          p.category === category.name ? { ...p, category: name.trim() } : p
+        ));
+
+        showToast("Categoría actualizada exitosamente");
+      } else {
+        showToast(result.error || "Error al actualizar la categoría");
+      }
+    });
+  };
+
+  const handleDeleteCategory = (category: AdminCategory) => {
+    const linkedProductsCount = currentProducts.filter(p => p.category === category.name).length;
+    if (linkedProductsCount > 0) {
+      alert(`No se puede eliminar la categoría "${category.name}" porque tiene ${linkedProductsCount} producto(s) vinculado(s).`);
+      return;
+    }
+
+    if (!confirm(`¿Estás seguro de eliminar la categoría "${category.name}"?`)) return;
+
+    startTransition(async () => {
+      const result = await deleteCategoryAction(category.id);
+      if (result.success) {
+        setCurrentCategories(currentCategories.filter(c => c.id !== category.id));
+        showToast("Categoría eliminada exitosamente");
+      } else {
+        showToast(result.error || "Error al eliminar la categoría");
+      }
     });
   };
 
@@ -317,6 +400,90 @@ export default function AdminDashboard({
             onDeleteProduct={handleDeleteProduct}
             loading={isPending}
           />
+        );
+      
+      case "categories":
+        return (
+          <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant/10 overflow-hidden">
+            <div className="p-lg border-b border-surface-variant/10 flex justify-between items-center">
+              <h2 className="font-headline-md text-headline-md text-on-surface">
+                Gestión de Categorías
+              </h2>
+              <button
+                type="button"
+                onClick={handleAddCategory}
+                className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm"
+                disabled={isPending}
+              >
+                <MaterialIcon name="add" className="text-[20px]" /> Agregar Categoría
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-surface-container-low border-b border-surface-variant/10">
+                  <tr>
+                    <th className="p-md font-label-md text-label-md text-secondary">
+                      Nombre de la Categoría
+                    </th>
+                    <th className="p-md font-label-md text-label-md text-secondary">
+                      Slug
+                    </th>
+                    <th className="p-md font-label-md text-label-md text-secondary">
+                      Productos Vinculados
+                    </th>
+                    <th className="p-md font-label-md text-label-md text-secondary text-right">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-variant/10">
+                  {currentCategories.map((category) => {
+                    const productCount = currentProducts.filter(
+                      (p) => p.category === category.name
+                    ).length;
+                    return (
+                      <tr
+                        key={category.id}
+                        className="hover:bg-surface-container-low transition-colors"
+                      >
+                        <td className="p-md font-headline-md text-body-md text-on-surface">
+                          {category.name}
+                        </td>
+                        <td className="p-md font-body-md text-secondary">
+                          {category.slug}
+                        </td>
+                        <td className="p-md font-body-md text-on-surface">
+                          <span className="bg-surface-container-highest text-secondary px-sm py-xs rounded text-caption">
+                            {productCount} {productCount === 1 ? 'producto' : 'productos'}
+                          </span>
+                        </td>
+                        <td className="p-md text-right space-x-md">
+                          <button
+                            type="button"
+                            onClick={() => handleEditCategory(category)}
+                            className="text-secondary hover:text-primary transition-colors"
+                            disabled={isPending}
+                            title="Editar nombre"
+                          >
+                            <MaterialIcon name="edit" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCategory(category)}
+                            className="text-secondary hover:text-error transition-colors"
+                            disabled={isPending}
+                            title="Eliminar categoría"
+                          >
+                            <MaterialIcon name="delete" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         );
       
       case "customers":
@@ -661,6 +828,7 @@ export default function AdminDashboard({
           {[
             { id: "dashboard", icon: "dashboard", label: "Panel de Control" },
             { id: "inventory", icon: "inventory_2", label: "Inventario" },
+            { id: "categories", icon: "category", label: "Categorías" },
             { id: "customers", icon: "group", label: "Clientes" },
             { id: "orders", icon: "shopping_bag", label: "Pedidos" },
             { id: "analytics", icon: "analytics", label: "Analíticas" },
@@ -748,6 +916,7 @@ export default function AdminDashboard({
           setEditingProduct(null);
         }}
         onSubmit={handleSubmitProduct}
+        categoriesList={currentCategories.map(c => c.name)}
         initialData={editingProduct ? {
           name: editingProduct.name,
           description: editingProduct.description,

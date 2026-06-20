@@ -6,6 +6,7 @@ import { getCartSessionId, getSession } from "@/lib/auth";
 import { getCartCount } from "@/lib/cart-helpers";
 import { db } from "@/lib/db";
 import { products } from "@/lib/db/schema";
+import { redirect } from "next/navigation";
 
 type PageProps = {
   searchParams: Promise<{
@@ -16,6 +17,9 @@ type PageProps = {
 export default async function CatalogPage({ searchParams }: PageProps) {
   await ensureDb();
   const session = await getSession();
+  if (session && session.role === "admin") {
+    redirect("/admin");
+  }
   const cartSessionId = await getCartSessionId();
   const cartCount = await getCartCount(session, cartSessionId);
 

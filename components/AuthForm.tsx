@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { loginAction, registerAction } from "@/lib/actions/auth-actions";
 import MaterialIcon from "./MaterialIcon";
 
@@ -9,6 +10,8 @@ export default function AuthForm() {
   const [isPending, startTransition] = useTransition();
   const [tab, setTab] = useState<"login" | "register">("login");
   const [error, setError] = useState("");
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -24,7 +27,7 @@ export default function AuthForm() {
       const result = await loginAction({
         email: loginEmail,
         password: loginPassword,
-      });
+      }, redirectTo);
       if (result && !result.success) {
         setError(result.error);
       }
@@ -43,7 +46,7 @@ export default function AuthForm() {
         name: regName,
         email: regEmail,
         password: regPassword,
-      });
+      }, redirectTo);
       if (result && !result.success) {
         setError(result.error);
       }

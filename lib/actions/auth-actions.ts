@@ -20,7 +20,7 @@ type RegisterData = {
   password: string
 }
 
-export async function loginAction(data: LoginData) {
+export async function loginAction(data: LoginData, redirectTo: string = "/") {
   const { email, password } = data
 
   const [user] = await db
@@ -52,10 +52,14 @@ export async function loginAction(data: LoginData) {
     await mergeGuestCartToUser(user.id, cartSessionId)
   }
 
-  redirect("/")
+  if (user.role === "admin") {
+    redirect("/admin")
+  } else {
+    redirect(redirectTo)
+  }
 }
 
-export async function registerAction(data: RegisterData) {
+export async function registerAction(data: RegisterData, redirectTo: string = "/") {
   const { name, email, password } = data
 
   // Verificar si el usuario ya existe
@@ -100,7 +104,7 @@ export async function registerAction(data: RegisterData) {
     await mergeGuestCartToUser(user.id, cartSessionId)
   }
 
-  redirect("/")
+  redirect(redirectTo)
 }
 
 export async function logoutAction() {

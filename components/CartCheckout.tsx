@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { formatCOP } from "@/lib/utils";
 import { removeCartItem, updateCartItem } from "@/lib/actions/cart-actions";
 import { createOrder } from "@/lib/actions/order-actions";
@@ -26,6 +27,7 @@ type CartCheckoutProps = {
   subtotal: number;
   shipping: number;
   total: number;
+  isLoggedIn: boolean;
 };
 
 export default function CartCheckout({
@@ -33,7 +35,9 @@ export default function CartCheckout({
   subtotal,
   shipping,
   total,
+  isLoggedIn,
 }: CartCheckoutProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"shipping" | "payment" | "review">("shipping");
   const [paymentMethod, setPaymentMethod] = useState("card");
@@ -61,11 +65,18 @@ export default function CartCheckout({
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      router.push("/auth?redirect=/carrito");
+      return;
+    }
     startTransition(async () => {
-      await createOrder({
+      const result = await createOrder({
         ...form,
         paymentMethod,
       });
+      if (result && !result.success) {
+        alert(result.error);
+      }
     });
   };
 

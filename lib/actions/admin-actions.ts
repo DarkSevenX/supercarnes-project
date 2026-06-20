@@ -4,7 +4,7 @@ import { eq, count, sum, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
-import { products, orders, users, orderItems } from "@/lib/db/schema"
+import { products, orders, users, orderItems, categories } from "@/lib/db/schema"
 
 // Verificar si el usuario es admin
 async function requireAdmin() {
@@ -159,4 +159,69 @@ export async function updateOrderStatus(orderId: number, status: string) {
   revalidatePath('/admin')
   revalidatePath(`/pedido/${orderId}`)
   return { success: true }
+}
+
+// Categorías
+export async function createCategoryAction(name: string) {
+  await requireAdmin();
+
+  const slug = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+
+  try {
+    const [category] = await db
+      .insert(categories)
+      .values({ name, slug })
+      .returning();
+
+    revalidatePath("/admin");
+    return { success: true, category };
+  } catch (error: any) {
+    console.error("Error al crear categoría:", error);
+    return { success: false, error: "La categoría ya existe o es inválida." };
+  }
+}
+
+export async function updateCategoryAction(id: number, name: string) {
+  await requireAdmin();
+
+  const slug = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+
+  try {
+    await db
+      .update(categories)
+      .set({ name, slug })
+      .where(eq(categories.id, id));
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al actualizar categoría:", error);
+    return { success: false, error: "Error al actualizar la categoría." };
+  }
+}
+
+export async function deleteCategoryAction(id: number) {
+  await requireAdmin();
+
+  try {
+    await db.delete(categories).where(eq(categories.id, id));
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al eliminar categoría:", error);
+    return { 
+      success: false, 
+      error: "No se puede eliminar la categoría porque tiene productos vinculados." 
+    };
+  }
 }

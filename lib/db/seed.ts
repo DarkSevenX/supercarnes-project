@@ -3,6 +3,7 @@ import { db } from "./index";
 import {
   addresses,
   cartItems,
+  categories,
   orderItems,
   orders,
   paymentMethods,
@@ -218,6 +219,32 @@ export async function seedDatabase() {
       badges: JSON.stringify(["Dry-Aged"]),
     },
   ];
+
+  const defaultCategories = [
+    "Res y Ternera",
+    "Cerdo y Charcutería",
+    "Aves",
+    "Cordero y Caza",
+  ];
+
+  const seedCategories = Array.from(
+    new Set([
+      ...defaultCategories,
+      ...productRows.map((p) => p.category),
+    ])
+  );
+
+  const categoryValues = seedCategories.map((name) => ({
+    name,
+    slug: name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, ""),
+  }));
+
+  await db.insert(categories).values(categoryValues);
 
   const insertedProducts = await db
     .insert(products)

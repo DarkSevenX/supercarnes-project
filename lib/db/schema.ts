@@ -22,12 +22,23 @@ export const users = sqliteTable("users", {
     .default(sql`(datetime('now'))`),
 });
 
+export const categories = sqliteTable("categories", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull().unique(),
+  slug: text("slug").notNull().unique(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+});
+
 export const products = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
-  category: text("category").notNull(),
+  category: text("category")
+    .notNull()
+    .references(() => categories.name, { onUpdate: "cascade", onDelete: "restrict" }),
   subcategory: text("subcategory"),
   cutType: text("cut_type"),
   grade: text("grade"),
@@ -135,7 +146,15 @@ export const usersRelations = relations(users, ({ many }) => ({
   cartItems: many(cartItems),
 }));
 
-export const productsRelations = relations(products, ({ many }) => ({
+export const categoriesRelations = relations(categories, ({ many }) => ({
+  products: many(products),
+}));
+
+export const productsRelations = relations(products, ({ one, many }) => ({
+  categoryRef: one(categories, {
+    fields: [products.category],
+    references: [categories.name],
+  }),
   cartItems: many(cartItems),
   orderItems: many(orderItems),
 }));
@@ -156,3 +175,4 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
 export type Order = typeof orders.$inferSelect;
+export type Category = typeof categories.$inferSelect;

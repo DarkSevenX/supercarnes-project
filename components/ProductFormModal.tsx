@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORIES, CUT_TYPES, GRADES } from "@/lib/utils";
+import { CUT_TYPES, GRADES } from "@/lib/utils";
 import MaterialIcon from "./MaterialIcon";
 
 type ProductFormData = {
@@ -23,6 +23,7 @@ type ProductFormModalProps = {
   onSubmit: (data: ProductFormData) => void;
   initialData?: Partial<ProductFormData>;
   title?: string;
+  categoriesList: string[];
 };
 
 const PRICE_UNITS = ["kg", "lb", "unidad", "12oz"];
@@ -33,11 +34,12 @@ export default function ProductFormModal({
   onSubmit,
   initialData = {},
   title = "Agregar Producto",
+  categoriesList = [],
 }: ProductFormModalProps) {
   const [formData, setFormData] = useState<ProductFormData>({
     name: initialData.name || "",
     description: initialData.description || "",
-    category: initialData.category || CATEGORIES[0],
+    category: initialData.category || (categoriesList.length > 0 ? categoriesList[0] : ""),
     cutType: initialData.cutType || CUT_TYPES[0],
     grade: initialData.grade || GRADES[0],
     price: initialData.price || 0,
@@ -142,7 +144,7 @@ export default function ProductFormModal({
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full p-sm border border-outline rounded-lg bg-surface-container"
               >
-                {CATEGORIES.map((cat) => (
+                {categoriesList.map((cat) => (
                   <option key={cat} value={cat}>
                     {cat}
                   </option>

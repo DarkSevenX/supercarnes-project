@@ -4,10 +4,15 @@ import TopNavBar from "@/components/TopNavBar";
 import { ensureDb } from "@/lib/api";
 import { getCartSessionId, getSession } from "@/lib/auth";
 import { getCartCount, getCartItemsForUser } from "@/lib/cart-helpers";
+import { redirect } from "next/navigation";
 
 export default async function CarritoPage() {
   await ensureDb();
   const session = await getSession();
+  if (session && session.role === "admin") {
+    redirect("/admin");
+  }
+
   const cartSessionId = await getCartSessionId();
   const cartCount = await getCartCount(session, cartSessionId);
   const items = await getCartItemsForUser(session, cartSessionId);
@@ -41,6 +46,7 @@ export default async function CarritoPage() {
             subtotal={subtotal}
             shipping={shipping}
             total={total}
+            isLoggedIn={!!session}
           />
         )}
       </main>
