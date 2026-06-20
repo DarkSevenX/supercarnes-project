@@ -1,36 +1,60 @@
+import CartCheckout from "@/components/CartCheckout";
 import Footer from "@/components/Footer";
 import TopNavBar from "@/components/TopNavBar";
-import ClientCatalog from "@/components/ClientCatalog";
 import { ensureDb } from "@/lib/api";
 import { getCartSessionId, getSession } from "@/lib/auth";
-import { getCartCount } from "@/lib/cart-helpers";
-import { db } from "@/lib/db";
-import { products } from "@/lib/db/schema";
+import { getCartCount, getCartItemsForUser } from "@/lib/cart-helpers";
+import Script from "next/script"; // IMPORTACIÓN DEL SCRIPT DE NEXT
 
-type PageProps = {
-  searchParams: Promise<{
-    search?: string;
-  }>;
-};
-
-export default async function CatalogPage({ searchParams }: PageProps) {
+export default async function CarritoPage() {
   await ensureDb();
   const session = await getSession();
   const cartSessionId = await getCartSessionId();
   const cartCount = await getCartCount(session, cartSessionId);
+  const items = await getCartItemsForUser(session, cartSessionId);
 
-  // Obtener parámetros de búsqueda
-  const params = await searchParams;
-  const initialSearch = params.search || "";
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const shipping = subtotal > 0 ? 150 : 0;
+  const total = subtotal + shipping;
 
-  // Obtener TODOS los productos de una vez
-  const allProducts = await db.select().from(products);
+  // Generamos una referencia única usando la fecha actual para el control de Wompi
+  const orderReference = `VICTORIANA-${Date.now()}`;
 
   return (
     <div className="min-h-screen flex flex-col">
-      <TopNavBar activeLink="shop" cartCount={cartCount} />
-      <main className="flex-grow pt-32 pb-xl max-w-container-max mx-auto px-lg">
-        <ClientCatalog initialProducts={allProducts} initialSearch={initialSearch} />
+      {/* SCRIPT INTEGRADO POR ALEJO: Le da soporte global al widget de Wompi */}
+      <Script 
+        src="https://checkout.wompi.co/widget.js" 
+        strategy="beforeInteractive" 
+      />
+      
+      <TopNavBar cartCount={cartCount} showSearch={false} />
+      <main className="flex-grow pt-20 pb-xl max-w-container-max mx-auto px-lg">
+        {items.length === 0 ? (
+          <div className="text-center py-xl bg-surface-container-lowest rounded-xl flex flex-col justify-center items-center min-h-[calc(100vh-20rem)]">
+            <p className="font-body-lg text-secondary mb-md">
+              Tu carrito está vacío.
+            </p>
+            <a
+              href="/"
+              className="inline-block bg-primary text-on-primary px-xl py-md rounded-lg font-label-md hover:bg-primary-container transition-colors"
+            >
+              Explorar catálogo
+            </a>
+          </div>
+        ) : (
+          /* Pasamos el total y la referencia de forma directa y limpia */
+          <CartCheckout
+            items={items}
+            subtotal={subtotal}
+            shipping={shipping}
+            total={total}
+            orderReference={orderReference}
+          />
+        )}
       </main>
       <Footer variant="default" />
     </div>

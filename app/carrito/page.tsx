@@ -19,6 +19,9 @@ export default async function CarritoPage() {
   const shipping = subtotal > 0 ? 150 : 0;
   const total = subtotal + shipping;
 
+  // Generamos una referencia única usando la fecha actual para el control de Wompi
+  const orderReference = `VICTORIANA-${Date.now()}`;
+
   return (
     <div className="min-h-screen flex flex-col">
       <TopNavBar cartCount={cartCount} showSearch={false} />
@@ -36,11 +39,13 @@ export default async function CarritoPage() {
             </a>
           </div>
         ) : (
+          /* Pasamos el total y la referencia de forma directa y limpia */
           <CartCheckout
             items={items}
             subtotal={subtotal}
             shipping={shipping}
             total={total}
+            orderReference={orderReference}
           />
         )}
       </main>
