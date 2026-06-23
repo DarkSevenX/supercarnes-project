@@ -46,9 +46,8 @@ export default function CartCheckout({
   const [paymentMethod, setPaymentMethod] = useState("wompi"); // Dejamos Wompi por defecto
   const [form, setForm] = useState({
     firstName: "",
-    lastName: "",
     address: "",
-    city: "Montería", // Por defecto la tierra
+    city: "Montería",
     zip: "",
     phone: "",
   });
@@ -227,37 +226,20 @@ export default function CartCheckout({
               <h2 className="font-headline-md text-headline-md text-primary">
                 Detalles de Entrega
               </h2>
-              <div className="grid grid-cols-2 gap-md">
-                <div>
-                  <label className="text-caption font-label-md text-secondary block mb-1">
-                    Nombre
-                  </label>
-                  <input
-                    className="checkout-input"
-                    placeholder="Juan"
-                    type="text"
-                    value={form.firstName}
-                    onChange={(e) =>
-                      setForm({ ...form, firstName: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="text-caption font-label-md text-secondary block mb-1">
-                    Apellido
-                  </label>
-                  <input
-                    className="checkout-input"
-                    placeholder="Pérez"
-                    type="text"
-                    value={form.lastName}
-                    onChange={(e) =>
-                      setForm({ ...form, lastName: e.target.value })
-                    }
-                    required
-                  />
-                </div>
+              <div>
+                <label className="text-caption font-label-md text-secondary block mb-1">
+                  Nombre
+                </label>
+                <input
+                  className="checkout-input"
+                  placeholder="Juan Pérez"
+                  type="text"
+                  value={form.firstName}
+                  onChange={(e) =>
+                    setForm({ ...form, firstName: e.target.value })
+                  }
+                  required
+                />
               </div>
               <div>
                 <label className="text-caption font-label-md text-secondary block mb-1">

@@ -124,7 +124,7 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
       <div className="flex-1 lg:pl-lg">
 
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-lg">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

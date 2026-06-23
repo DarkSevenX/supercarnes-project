@@ -55,7 +55,7 @@
   --spacing-xs: 4px;
   --spacing-xl: 48px;
   --spacing-lg: 24px;
-  --spacing-container-max: 1280px;
+  --spacing-container-max: 1536px;
   --spacing-gutter: 24px;
 
   --font-headline-md: var(--font-inter), "Inter", sans-serif;
@@ -96,7 +96,7 @@
 }
 
 @utility max-w-container-max {
-  max-width: 1280px;
+  max-width: 1536px;
 }
 
 .material-symbols-outlined {

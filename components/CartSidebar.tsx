@@ -29,7 +29,6 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   
   const [form, setForm] = useState({
     firstName: "",
-    lastName: "",
     address: "",
     city: "Montería",
     zip: "230001",
@@ -83,7 +82,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const cambio = cashAmountNum > total ? cashAmountNum - total : 0;
 
   const handleCheckout = () => {
-    if (!form.firstName || !form.lastName || !form.address || !form.phone) {
+    if (!form.firstName || !form.address || !form.phone) {
       alert("Por favor, completa todos los detalles de entrega.");
       return;
     }
@@ -290,27 +289,15 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   Detalles de Entrega
                 </h3>
                 
-                <div className="grid grid-cols-2 gap-md">
-                  <div>
-                    <label className="text-caption font-bold text-secondary block mb-1">Nombre</label>
-                    <input
-                      type="text"
-                      className="checkout-input"
-                      placeholder="Juan"
-                      value={form.firstName}
-                      onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-caption font-bold text-secondary block mb-1">Apellido</label>
-                    <input
-                      type="text"
-                      className="checkout-input"
-                      placeholder="Pérez"
-                      value={form.lastName}
-                      onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                    />
-                  </div>
+                <div>
+                  <label className="text-caption font-bold text-secondary block mb-1">Nombre</label>
+                  <input
+                    type="text"
+                    className="checkout-input"
+                    placeholder="Juan Pérez"
+                    value={form.firstName}
+                    onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  />
                 </div>
                 
                 <div>

@@ -42,7 +42,7 @@ export default function TopNavBar({
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-surface shadow-sm border-b border-surface-container-highest">
-      <div className="max-w-container-max mx-auto flex justify-between items-center px-lg py-sm h-16">
+      <div className="w-full flex justify-between items-center px-lg py-sm h-16">
         <Link href="/" className="flex items-center gap-md">
           <Image
             alt="La Victoriana Logo"

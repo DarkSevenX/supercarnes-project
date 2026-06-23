@@ -10,7 +10,6 @@ import { cartItems, orderItems, orders, users } from "@/lib/db/schema"
 
 type CheckoutData = {
   firstName: string
-  lastName: string
   address: string
   city: string
   zip: string
@@ -34,7 +33,6 @@ export async function createOrder(data: CheckoutData) {
 
   const {
     firstName,
-    lastName,
     address,
     city,
     zip,
@@ -63,8 +61,7 @@ export async function createOrder(data: CheckoutData) {
       total,
       paymentMethod,
       shippingAddress: JSON.stringify({
-        firstName,
-        lastName,
+        name: firstName,
         street: address,
         city,
         zip,
