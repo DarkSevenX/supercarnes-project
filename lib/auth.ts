@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 const secret = new TextEncoder().encode(
-  process.env.AUTH_SECRET ?? "super-carnes-atelier-secret-key-2024",
+  process.env.AUTH_SECRET ?? "super-carnes-la-victoriana-secret-key-2024",
 );
 
 export type SessionPayload = {

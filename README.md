@@ -121,7 +121,7 @@ Navegar a `http://localhost:3000` en el navegador.
 - **Contraseña:** admin123
 
 ### Usuario Cliente
-- **Email:** alejandro.v@atelier.com
+- **Email:** alejandro.v@supercarnes.com
 - **Contraseña:** password123
 
 ## API Endpoints

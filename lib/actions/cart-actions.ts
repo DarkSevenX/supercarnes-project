@@ -25,7 +25,7 @@ export async function addToCart(productId: number, quantity: number = 1) {
   if (product.stockKg !== undefined && product.stockKg < quantity) {
     return { 
       success: false, 
-      error: `Solo quedan ${product.stockKg} kg disponibles de este corte.` 
+      error: `Solo quedan ${product.stockKg} kg disponibles de este producto.` 
     }
   }
   // Buscar si ya existe en el carrito

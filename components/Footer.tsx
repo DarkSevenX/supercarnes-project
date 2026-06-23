@@ -87,7 +87,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
               Super Carnes
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              © 2024 Super Carnes Atelier. Todos los derechos reservados.
+              © 2024 Super Carnes La Victoriana. Todos los derechos reservados.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-sm">
@@ -121,7 +121,7 @@ export default function Footer({ variant = "default" }: FooterProps) {
           </span>
           <p className="font-body-sm text-gray-400 max-w-xs text-xs">
             © 2024 Super Carnes. Carnicería Premium. Tradición y excelencia en
-            cada corte.
+            cada producto.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-md">

@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { formatCOP } from "@/lib/utils";
+import { formatCOP, ORDER_STATUS_LABELS, ORDER_STATUS_BADGE } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth-actions";
 import { 
   createProduct, 
@@ -59,12 +60,20 @@ type AdminDashboardProps = {
   stats: AdminStats;
   products: AdminProduct[];
   categories: AdminCategory[];
+  orders?: any[];
+  orderItems?: Record<number, any[]>;
+  customers?: any[];
+  recentOrders?: any[];
 };
 
 export default function AdminDashboard({
   stats,
   products,
   categories,
+  orders = [],
+  orderItems = {},
+  customers = [],
+  recentOrders = [],
 }: AdminDashboardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -212,145 +221,12 @@ export default function AdminDashboard({
   const [timeRange, setTimeRange] = useState<"week" | "month" | "quarter" | "year">("month");
   
   // Datos para la sección de clientes
-  const customerData = [
-    {
-      id: 1,
-      name: "Alejandro V. Montemayor",
-      email: "alejandro.v@atelier.com",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAtYvY_6wGhj5Oe8w5bF-avFTKL_ilHYmzWxhsFqhep_gNP5KVSwSzsREpVGOYC1FXnJcLM6FAdAR1fGbcPaM-_lW736rUQ4ps551XO5t5Y9cQfby9nT61c5Um494RTViCDTCP7CwCxwMWBIdP2-VWEvjzzfZkrkjPRECNqGfbOcL_RdKUCfyYhjWeMlZsgE7f1GD9LDcyGdFV44DvVy_JsnkxBrfko5z7AmqRhphS5BvC1z2pLBxWDVHBXsqcfM_7WrNASHg1mvQk",
-      memberSince: "2021",
-      loyaltyPoints: 2450,
-      totalSpent: 485000,
-      orderCount: 3,
-      lastOrderDate: "2023-10-24",
-    },
-    {
-      id: 2,
-      name: "María González",
-      email: "maria.g@empresa.com",
-      avatarUrl: null,
-      memberSince: "2022",
-      loyaltyPoints: 1200,
-      totalSpent: 220000,
-      orderCount: 2,
-      lastOrderDate: "2023-10-12",
-    },
-    {
-      id: 3,
-      name: "Carlos Rodríguez",
-      email: "carlos.r@consulting.com",
-      avatarUrl: null,
-      memberSince: "2023",
-      loyaltyPoints: 500,
-      totalSpent: 89000,
-      orderCount: 1,
-      lastOrderDate: "2023-09-15",
-    },
-  ];
-
-  const recentOrdersData = [
-    {
-      id: 1,
-      customerName: "Alejandro V. Montemayor",
-      total: 485000,
-      status: "in_transit",
-      date: "2023-10-24",
-    },
-    {
-      id: 2,
-      customerName: "María González",
-      total: 220000,
-      status: "delivered",
-      date: "2023-10-12",
-    },
-    {
-      id: 3,
-      customerName: "Carlos Rodríguez",
-      total: 89000,
-      status: "delivered",
-      date: "2023-09-15",
-    },
-  ];
+  const customerData = customers;
+  const recentOrdersData = recentOrders;
 
   // Datos para la sección de pedidos
-  const ordersData = [
-    {
-      id: 1,
-      orderNumber: "SC-8942",
-      customerName: "Alejandro V. Montemayor",
-      customerEmail: "alejandro.v@atelier.com",
-      status: "in_transit",
-      total: 485000,
-      itemCount: 3,
-      createdAt: "2023-10-24T10:00:00",
-      deliveryDate: "2023-10-24T11:25:00",
-      paymentMethod: "card",
-      shippingAddress: "Av. Paseo de la Reforma 250, Piso 12, Juárez, Ciudad de México, 06600",
-    },
-    {
-      id: 2,
-      orderNumber: "SC-8711",
-      customerName: "María González",
-      customerEmail: "maria.g@empresa.com",
-      status: "delivered",
-      total: 220000,
-      itemCount: 1,
-      createdAt: "2023-10-12T14:00:00",
-      deliveryDate: "2023-10-12T15:30:00",
-      paymentMethod: "spei",
-      shippingAddress: "Av. de los Encinos 452, Ciudad de México, 11000",
-    },
-    {
-      id: 3,
-      orderNumber: "SC-8520",
-      customerName: "Carlos Rodríguez",
-      customerEmail: "carlos.r@consulting.com",
-      status: "delivered",
-      total: 89000,
-      itemCount: 1,
-      createdAt: "2023-09-15T11:30:00",
-      deliveryDate: "2023-09-15T13:15:00",
-      paymentMethod: "card",
-      shippingAddress: "Blvd. Miguel de Cervantes 123, Guadalajara, 44100",
-    },
-  ];
-
-  const orderItemsData = {
-    1: [
-      {
-        id: 1,
-        productName: "Premium Wagyu Selection",
-        quantity: 3,
-        unitPrice: 161667,
-        total: 485000,
-      },
-    ],
-    2: [
-      {
-        id: 2,
-        productName: "Tomahawk Dry-Aged",
-        quantity: 1,
-        unitPrice: 220000,
-        total: 220000,
-      },
-    ],
-    3: [
-      {
-        id: 3,
-        productName: "Ribeye Prime Dry-Aged",
-        quantity: 2,
-        unitPrice: 72500,
-        total: 145000,
-      },
-      {
-        id: 4,
-        productName: "Costilla Cargada Select",
-        quantity: 1,
-        unitPrice: 89000,
-        total: 89000,
-      },
-    ],
-  };
+  const ordersData = orders;
+  const orderItemsData = orderItems;
 
   // Datos para la sección de analíticas
   const salesData = [
@@ -398,6 +274,7 @@ export default function AdminDashboard({
             products={currentProducts}
             onEditProduct={handleEditProduct}
             onDeleteProduct={handleDeleteProduct}
+            onAddProduct={handleAddProduct}
             loading={isPending}
           />
         );
@@ -594,115 +471,75 @@ export default function AdminDashboard({
               <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant/10 overflow-hidden">
                 <div className="p-lg border-b border-surface-variant/10 flex justify-between items-center">
                   <h2 className="font-headline-md text-headline-md text-on-surface">
-                    Inventario de Productos
+                    Pedidos Recientes
                   </h2>
-                  <div className="flex gap-sm">
-                    <button
-                      type="button"
-                      onClick={handleRefresh}
-                      className="bg-surface-container text-on-surface px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-surface-container-highest transition-colors flex items-center gap-sm"
-                      disabled={isPending}
-                    >
-                      <MaterialIcon name="refresh" className="text-[20px]" />
-                      Actualizar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleAddProduct}
-                      className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm"
-                      disabled={isPending}
-                    >
-                      <MaterialIcon name="add" className="text-[20px]" /> Agregar Producto
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveNav("orders")}
+                    className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm"
+                  >
+                    <MaterialIcon name="shopping_bag" className="text-[20px]" />
+                    Ver Todos los Pedidos
+                  </button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-surface-container-low border-b border-surface-variant/10">
                       <tr>
                         <th className="p-md font-label-md text-label-md text-secondary">
-                          Producto
+                          Pedido #
                         </th>
                         <th className="p-md font-label-md text-label-md text-secondary">
-                          Grado
+                          Cliente
                         </th>
                         <th className="p-md font-label-md text-label-md text-secondary">
-                          Stock
+                          Fecha
                         </th>
                         <th className="p-md font-label-md text-label-md text-secondary">
-                          Precio
+                          Estado
                         </th>
                         <th className="p-md font-label-md text-label-md text-secondary text-right">
-                          Acciones
+                          Total
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-variant/10">
-                      {currentProducts.slice(0, 6).map((product) => (
+                      {orders.slice(0, 6).map((order) => (
                         <tr
-                          key={product.id}
+                          key={order.id}
                           className="hover:bg-surface-container-low transition-colors"
                         >
-                          <td className="p-md flex items-center gap-md">
-                            <div className="w-12 h-12 rounded-lg bg-surface-container overflow-hidden">
-                              <Image
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                                src={product.imageUrl}
-                                width={48}
-                                height={48}
-                                unoptimized
-                              />
-                            </div>
-                            <div>
-                              <p className="font-headline-md text-body-md text-on-surface">
-                                {product.name}
-                              </p>
-                              <p className="text-caption text-secondary">
-                                {product.description}
-                              </p>
-                            </div>
+                          <td className="p-md font-bold text-on-surface">
+                            {order.orderNumber}
                           </td>
                           <td className="p-md">
-                            <span className="bg-surface-container-highest text-secondary px-sm py-xs rounded text-caption">
-                              {product.grade || "Standard"}
+                            <div className="font-body-md text-on-surface">
+                              {order.customerName}
+                            </div>
+                            <div className="text-caption text-secondary">
+                              {order.customerEmail}
+                            </div>
+                          </td>
+                          <td className="p-md text-secondary text-caption">
+                            {new Date(order.createdAt).toLocaleDateString("es-MX", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </td>
+                          <td className="p-md">
+                            <span
+                              className={`px-sm py-xs rounded-full text-[10px] font-bold ${
+                                ORDER_STATUS_BADGE[order.status] ?? "bg-surface-container-highest text-secondary"
+                              }`}
+                            >
+                              {ORDER_STATUS_LABELS[order.status] || order.status}
                             </span>
                           </td>
-                          <td className="p-md">
-                            <div className="flex flex-col gap-unit">
-                              <span className="font-body-md text-on-surface">
-                                {product.stockKg} kg
-                              </span>
-                              <div className="w-24 h-1 bg-surface-variant rounded-full overflow-hidden">
-                                <div
-                                  className={`${product.stockKg < 15 ? "bg-error" : "bg-primary"} h-full`}
-                                  style={{
-                                    width: `${Math.min(100, Math.round((product.stockKg / 50) * 100))}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </td>
-                          <td className="p-md font-body-md text-on-surface">
-                            {formatCOP(product.price)}/{product.priceUnit}
-                          </td>
-                          <td className="p-md text-right space-x-md">
-                            <button
-                              type="button"
-                              onClick={() => handleEditProduct(product)}
-                              className="text-secondary hover:text-primary transition-colors"
-                              disabled={isPending}
-                            >
-                              <MaterialIcon name="edit" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="text-secondary hover:text-error transition-colors"
-                              disabled={isPending}
-                            >
-                              <MaterialIcon name="delete" />
-                            </button>
+                          <td className="p-md text-right font-bold text-primary font-body-md">
+                            {formatCOP(order.total)}
                           </td>
                         </tr>
                       ))}
@@ -714,7 +551,7 @@ export default function AdminDashboard({
               <div className="flex flex-col gap-lg">
                 <div className="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-surface-variant/10">
                   <h2 className="font-headline-md text-headline-md text-on-surface mb-lg">
-                    Cortes Más Vendidos
+                    Productos Más Vendidos
                   </h2>
                   <ul className="space-y-md">
                     {stats.topSelling.map((item) => (
@@ -790,7 +627,7 @@ export default function AdminDashboard({
             
             <footer className="pt-xl pb-lg flex flex-col md:flex-row justify-between items-center text-secondary border-t border-surface-variant/20">
               <p className="text-caption">
-                © 2024 Super Carnes. Premium Butcher Atelier. Admin Portal v2.4.1
+                © 2024 Super Carnes La Victoriana. Panel de Administración v2.4.1
               </p>
               <div className="flex gap-lg mt-md md:mt-0">
                 <a className="text-caption hover:text-primary transition-colors" href="#">
@@ -890,6 +727,13 @@ export default function AdminDashboard({
             </span>
           </div>
           <div className="flex items-center gap-lg">
+            <Link
+              href="/"
+              className="flex items-center gap-xs text-secondary hover:text-primary transition-colors font-label-md text-label-md border border-outline-variant/30 rounded-lg px-md py-xs bg-surface-container-low"
+            >
+              <MaterialIcon name="store" className="text-[20px]" />
+              <span>Volver a la tienda</span>
+            </Link>
             <div className="relative group">
               <MaterialIcon
                 name="notifications"

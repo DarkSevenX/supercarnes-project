@@ -22,6 +22,7 @@ type InventorySectionProps = {
   products: AdminProduct[];
   onEditProduct: (product: AdminProduct) => void;
   onDeleteProduct: (id: number) => void;
+  onAddProduct: () => void;
   loading: boolean;
 };
 
@@ -43,6 +44,7 @@ export default function InventorySection({
   products,
   onEditProduct,
   onDeleteProduct,
+  onAddProduct,
   loading,
 }: InventorySectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -141,9 +143,18 @@ export default function InventorySection({
 
       <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-surface-variant/10 overflow-hidden">
         <div className="p-lg border-b border-surface-variant/10 flex flex-col md:flex-row justify-between items-center gap-md">
-          <h2 className="font-headline-md text-headline-md text-on-surface">
-            Gestión de Inventario
-          </h2>
+          <div className="flex items-center gap-md">
+            <h2 className="font-headline-md text-headline-md text-on-surface">
+              Gestión de Inventario
+            </h2>
+            <button
+              type="button"
+              onClick={onAddProduct}
+              className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm cursor-pointer"
+            >
+              <MaterialIcon name="add" className="text-[20px]" /> Agregar Producto
+            </button>
+          </div>
           
           <div className="flex flex-wrap gap-sm w-full md:w-auto">
             <div className="relative flex-1 md:flex-none">
@@ -194,9 +205,6 @@ export default function InventorySection({
                   Categoría
                 </th>
                 <th className="p-md font-label-md text-label-md text-secondary">
-                  Grado
-                </th>
-                <th className="p-md font-label-md text-label-md text-secondary">
                   Stock
                 </th>
                 <th className="p-md font-label-md text-label-md text-secondary">
@@ -236,13 +244,6 @@ export default function InventorySection({
                   <td className="p-md">
                     <span className="bg-surface-container-highest text-secondary px-sm py-xs rounded text-caption">
                       {product.category}
-                    </span>
-                  </td>
-                  <td className="p-md">
-                    <span
-                      className={`${gradeBadge(product.grade)} text-[10px] uppercase font-bold px-sm py-unit rounded`}
-                    >
-                      {product.grade ?? "Standard"}
                     </span>
                   </td>
                   <td className="p-md">

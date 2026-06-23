@@ -225,3 +225,126 @@ export async function deleteCategoryAction(id: number) {
     };
   }
 }
+
+export async function getAdminOrdersAndCustomers() {
+  await requireAdmin()
+
+  // Fetch all orders with customer info
+  const dbOrders = await db
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      customerName: users.name,
+      customerEmail: users.email,
+      status: orders.status,
+      total: orders.total,
+      paymentMethod: orders.paymentMethod,
+      shippingAddress: orders.shippingAddress,
+      createdAt: orders.createdAt,
+    })
+    .from(orders)
+    .innerJoin(users, eq(orders.userId, users.id))
+    .orderBy(sql`${orders.createdAt} desc`)
+
+  // Fetch all order items grouped by orderId
+  const dbOrderItems = await db
+    .select()
+    .from(orderItems)
+
+  const orderItemsMap: Record<number, any[]> = {}
+  dbOrderItems.forEach(item => {
+    if (!orderItemsMap[item.orderId]) {
+      orderItemsMap[item.orderId] = []
+    }
+    orderItemsMap[item.orderId].push({
+      id: item.id,
+      productName: item.productName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      total: item.quantity * item.unitPrice,
+    })
+  })
+
+  // Format orders for frontend
+  const ordersList = dbOrders.map(order => {
+    // Parse shipping address if it's JSON
+    let addressStr = order.shippingAddress
+    try {
+      const parsed = JSON.parse(order.shippingAddress)
+      addressStr = `${parsed.street}, ${parsed.city}${parsed.zip ? `, CP ${parsed.zip}` : ''}`
+    } catch {
+      // Keep original
+    }
+
+    const items = orderItemsMap[order.id] || []
+    const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
+
+    return {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      status: order.status,
+      total: order.total,
+      itemCount,
+      createdAt: order.createdAt,
+      paymentMethod: order.paymentMethod,
+      shippingAddress: addressStr,
+    }
+  })
+
+  // Fetch customers with total orders, total spent, and last order date
+  const dbCustomers = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      memberSince: users.memberSince,
+      loyaltyPoints: users.loyaltyPoints,
+    })
+    .from(users)
+    .where(eq(users.role, "customer"))
+
+  // For each customer, get count of orders, sum of totals, and max of createdAt
+  const customersList = await Promise.all(
+    dbCustomers.map(async (customer) => {
+      const [orderStats] = await db
+        .select({
+          count: count(),
+          spent: sum(orders.total),
+          lastOrder: sql<string>`max(${orders.createdAt})`,
+        })
+        .from(orders)
+        .where(eq(orders.userId, customer.id))
+
+      return {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email,
+        avatarUrl: customer.avatarUrl,
+        memberSince: customer.memberSince,
+        loyaltyPoints: customer.loyaltyPoints,
+        totalSpent: Number(orderStats?.spent ?? 0),
+        orderCount: orderStats?.count ?? 0,
+        lastOrderDate: orderStats?.lastOrder || "Sin compras",
+      }
+    })
+  )
+
+  // Construct recent orders for the customer tab
+  const recentOrdersData = ordersList.slice(0, 5).map(o => ({
+    id: o.id,
+    customerName: o.customerName,
+    total: o.total,
+    status: o.status,
+    date: o.createdAt.split('T')[0],
+  }))
+
+  return {
+    orders: ordersList,
+    orderItems: orderItemsMap,
+    customers: customersList,
+    recentOrders: recentOrdersData,
+  }
+}

@@ -29,7 +29,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
   
   // Estados para los filtros - empezar sin filtros
   const [categories, setCategories] = useState<string[]>([]);
-  const [cuts, setCuts] = useState<string[]>([]);
   const [maxPrice, setMaxPrice] = useState<number>(5000000);
   const [searchTerm, setSearchTerm] = useState<string>(initialSearch);
 
@@ -46,13 +45,7 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
       });
     }
     
-    // Filtrar por cortes usando cutType
-    if (cuts.length > 0) {
-      result = result.filter(product => {
-        if (!product.cutType) return false;
-        return cuts.some(cut => product.cutType?.toLowerCase().includes(cut.toLowerCase()));
-      });
-    }
+
     
     // Filtrar por precio máximo
     result = result.filter(product => product.price <= maxPrice);
@@ -68,7 +61,7 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
     }
     
     setFilteredProducts(result);
-  }, [products, categories, cuts, maxPrice, searchTerm]);
+  }, [products, categories, maxPrice, searchTerm]);
 
   const handleCategoryToggle = (category: string) => {
     setCategories(prev => {
@@ -76,16 +69,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
         return prev.filter(c => c !== category);
       } else {
         return [...prev, category];
-      }
-    });
-  };
-
-  const handleCutToggle = (cut: string) => {
-    setCuts(prev => {
-      if (prev.includes(cut)) {
-        return prev.filter(c => c !== cut);
-      } else {
-        return [...prev, cut];
       }
     });
   };
@@ -132,11 +115,9 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
       <div className="lg:w-64 flex-shrink-0">
         <ClientCatalogFilters 
           categories={categories}
-          cuts={cuts}
           maxPrice={maxPrice}
           availableCategories={availableCategories}
           onCategoryToggle={handleCategoryToggle}
-          onCutToggle={handleCutToggle}
           onPriceChange={handlePriceChange}
         />
       </div>
@@ -173,7 +154,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
             <button
               onClick={() => {
                 setCategories([]);
-                setCuts([]);
                 setMaxPrice(5000000);
                 setSearchTerm("");
                 // También limpiar la URL

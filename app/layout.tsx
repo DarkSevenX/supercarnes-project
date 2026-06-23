@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "Super Carnes La Victoriana | Carnicería Premium Artesanal",
   description:
-    "Descubre nuestra selección curada de cortes premium de origen ético, desde Wagyu añejado hasta costillas artesanales.",
+    "Descubre nuestra selección curada de productos cárnicos premium de origen ético, desde Wagyu añejado hasta costillas artesanales.",
 };
 
 export default function RootLayout({

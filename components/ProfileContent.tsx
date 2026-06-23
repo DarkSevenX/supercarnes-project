@@ -130,13 +130,13 @@ export default function ProfileContent({
             Atención Personalizada
           </h3>
           <p className="text-caption text-secondary">
-            ¿Necesitas ayuda con un corte específico o pedido especial?
+            ¿Necesitas ayuda con un producto específico o pedido especial?
           </p>
           <button
             type="button"
             className="bg-on-surface text-white py-sm px-md rounded-lg text-label-md font-label-md hover:opacity-90 transition-opacity"
           >
-            Contactar Sommelier
+            Contactar Asesor
           </button>
         </div>
       </aside>
@@ -161,7 +161,7 @@ export default function ProfileContent({
                   <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center overflow-hidden">
                     {order.imageUrl && (
                       <Image
-                        alt="Corte"
+                        alt="Producto"
                         className="w-full h-full object-cover"
                         src={order.imageUrl}
                         width={64}
@@ -329,11 +329,10 @@ export default function ProfileContent({
         <div className="bg-primary p-lg rounded-xl text-white flex flex-col md:flex-row justify-between items-center gap-lg">
           <div>
             <h3 className="text-headline-md font-headline-md mb-xs">
-              Ofertas de Atelier
+              Ofertas Exclusivas
             </h3>
             <p className="text-body-md opacity-90">
-              Recibe notificaciones sobre cortes exclusivos y ediciones limitadas
-              de dry-aged.
+              Recibe notificaciones sobre productos exclusivos y ediciones limitadas.
             </p>
           </div>
           <button

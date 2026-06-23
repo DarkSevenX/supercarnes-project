@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { formatCOP, ORDER_STATUS_LABELS } from "@/lib/utils";
 import MaterialIcon from "./MaterialIcon";
 
@@ -274,7 +274,7 @@ export default function OrdersSection({
             </thead>
             <tbody className="divide-y divide-surface-variant/10">
               {filteredOrders.map((order) => (
-                <>
+                <Fragment key={order.id}>
                   <tr
                     key={order.id}
                     className="hover:bg-surface-container-low transition-colors cursor-pointer"
@@ -439,7 +439,7 @@ export default function OrdersSection({
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

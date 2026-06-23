@@ -1,7 +1,7 @@
 import AdminDashboard from "@/components/AdminDashboard";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { getAdminStats } from "@/lib/actions/admin-actions";
+import { getAdminStats, getAdminOrdersAndCustomers } from "@/lib/actions/admin-actions";
 import { db } from "@/lib/db";
 import { products, categories } from "@/lib/db/schema";
 
@@ -12,6 +12,7 @@ export default async function AdminPage() {
   const stats = await getAdminStats();
   const productsData = await db.select().from(products);
   const categoriesData = await db.select().from(categories);
+  const liveData = await getAdminOrdersAndCustomers();
 
   const parsedStats = {
     ...stats,
@@ -37,6 +38,10 @@ export default async function AdminPage() {
         name: c.name,
         slug: c.slug,
       }))}
+      orders={liveData.orders}
+      orderItems={liveData.orderItems}
+      customers={liveData.customers}
+      recentOrders={liveData.recentOrders}
     />
   );
 }

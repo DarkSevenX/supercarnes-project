@@ -50,7 +50,7 @@ export async function seedDatabase() {
   const [customer] = await db
     .insert(users)
     .values({
-      email: "alejandro.v@atelier.com",
+      email: "alejandro.v@supercarnes.com",
       passwordHash,
       name: "Alejandro V. Montemayor",
       avatarUrl: IMG.avatar,

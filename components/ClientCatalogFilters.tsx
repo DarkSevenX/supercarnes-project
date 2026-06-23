@@ -1,24 +1,18 @@
 "use client";
 
-import { CUT_TYPES } from "@/lib/utils";
-
 type ClientCatalogFiltersProps = {
   categories: string[];
-  cuts: string[];
   maxPrice: number;
   availableCategories: string[];
   onCategoryToggle: (category: string) => void;
-  onCutToggle: (cut: string) => void;
   onPriceChange: (price: number) => void;
 };
 
 export default function ClientCatalogFilters({
   categories,
-  cuts,
   maxPrice,
   availableCategories,
   onCategoryToggle,
-  onCutToggle,
   onPriceChange
 }: ClientCatalogFiltersProps) {
 
@@ -55,29 +49,6 @@ export default function ClientCatalogFilters({
           </ul>
         </div>
 
-        {/* Cortes */}
-        <div>
-          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
-            Cortes
-          </h3>
-          <div className="flex flex-wrap gap-xs">
-            {CUT_TYPES.map((cut) => (
-              <button
-                key={cut}
-                type="button"
-                onClick={() => onCutToggle(cut)}
-                className={
-                  cuts.includes(cut)
-                    ? "bg-primary-container text-on-primary-container px-sm py-xs rounded-lg text-caption font-semibold cursor-pointer"
-                    : "bg-surface-container text-on-surface-variant px-sm py-xs rounded-lg text-caption font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer"
-                }
-              >
-                {cut}
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Rango de Precios */}
         <div>
           <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
@@ -106,10 +77,6 @@ export default function ClientCatalogFilters({
               // Desmarcar todas las categorías
               categories.forEach(cat => {
                 onCategoryToggle(cat);
-              });
-              // Desmarcar todos los cortes
-              cuts.forEach(cut => {
-                onCutToggle(cut);
               });
               // Restablecer precio máximo
               onPriceChange(5000000);

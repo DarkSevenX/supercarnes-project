@@ -62,7 +62,7 @@ export default function AuthForm() {
           Super Carnes
         </h1>
         <p className="text-label-md font-label-md uppercase tracking-widest text-secondary">
-          Atelier de Cortes Finos
+          Carnicería Premium
         </p>
       </header>
 
@@ -119,7 +119,7 @@ export default function AuthForm() {
                     <input
                       className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="login-email"
-                      placeholder="ejemplo@atelier.com"
+                      placeholder="ejemplo@supercarnes.com"
                       type="email"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
@@ -155,7 +155,7 @@ export default function AuthForm() {
                     disabled={isPending}
                     className="w-full bg-primary-container text-on-primary py-md rounded-lg font-label-md tracking-wide hover:opacity-90 transition-opacity active:scale-[0.98] transform mt-md disabled:opacity-60"
                   >
-                    {isPending ? "PROCESANDO..." : "ACCEDER AL ATELIER"}
+                    {isPending ? "PROCESANDO..." : "INGRESAR A LA TIENDA"}
                   </button>
                 </form>
               </div>
@@ -192,7 +192,7 @@ export default function AuthForm() {
                     <input
                       className="w-full bg-surface-container-low border-none border-b border-secondary/20 py-sm px-sm focus:ring-0 placeholder:text-secondary-fixed-dim transition-all"
                       id="reg-email"
-                      placeholder="ejemplo@atelier.com"
+                      placeholder="ejemplo@supercarnes.com"
                       type="email"
                       value={regEmail}
                       onChange={(e) => setRegEmail(e.target.value)}

@@ -77,7 +77,7 @@ export default function OrderTracking({ order }: { order: OrderData }) {
             Tu pedido está en camino
           </h1>
           <p className="font-body-lg text-body-lg text-secondary max-w-2xl">
-            Estamos llevando la mejor selección artesanal de cortes premium
+            Estamos llevando la mejor selección artesanal de productos premium
             directamente a tu puerta. Prepárate para una experiencia culinaria
             superior.
           </p>
@@ -311,8 +311,8 @@ export default function OrderTracking({ order }: { order: OrderData }) {
                   Garantía de Calidad
                 </h4>
                 <p className="font-body-md text-body-md text-on-primary-container mb-lg">
-                  Todos nuestros cortes viajan en empaque de vacío y cadena de
-                  frío controlada para asegurar la frescura desde nuestro taller
+                  Todos nuestros productos viajan en empaque de vacío y cadena de
+                  frío controlada para asegurar la frescura desde nuestra carnicería
                   hasta tu mesa.
                 </p>
                 <div className="flex items-center gap-sm">

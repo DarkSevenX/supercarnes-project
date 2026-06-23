@@ -108,27 +108,7 @@ export default function CatalogFilters() {
           </ul>
         </div>
 
-        <div>
-          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
-            Cortes
-          </h3>
-          <div className="flex flex-wrap gap-xs">
-            {CUT_TYPES.map((cut) => (
-              <button
-                key={cut}
-                type="button"
-                onClick={() => toggleCut(cut)}
-                className={
-                  filters.cuts.includes(cut)
-                    ? "bg-primary-container text-on-primary-container px-sm py-xs rounded-lg text-caption font-semibold cursor-pointer"
-                    : "bg-surface-container text-on-surface-variant px-sm py-xs rounded-lg text-caption font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer"
-                }
-              >
-                {cut}
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         <div>
           <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">

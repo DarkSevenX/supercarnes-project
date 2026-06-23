@@ -152,39 +152,9 @@ export default function ProductFormModal({
               </select>
             </div>
 
-            <div>
-              <label className="block text-label-md text-secondary mb-2">
-                Tipo de Corte
-              </label>
-              <select
-                value={formData.cutType}
-                onChange={(e) => setFormData({ ...formData, cutType: e.target.value })}
-                className="w-full p-sm border border-outline rounded-lg bg-surface-container"
-              >
-                {CUT_TYPES.map((cut) => (
-                  <option key={cut} value={cut}>
-                    {cut}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div>
-              <label className="block text-label-md text-secondary mb-2">
-                Grado
-              </label>
-              <select
-                value={formData.grade}
-                onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                className="w-full p-sm border border-outline rounded-lg bg-surface-container"
-              >
-                {GRADES.map((grade) => (
-                  <option key={grade} value={grade}>
-                    {grade}
-                  </option>
-                ))}
-              </select>
-            </div>
+
+
 
             <div>
               <label className="block text-label-md text-secondary mb-2">

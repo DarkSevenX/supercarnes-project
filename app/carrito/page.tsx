@@ -5,6 +5,7 @@ import { ensureDb } from "@/lib/api";
 import { getCartSessionId, getSession } from "@/lib/auth";
 import { getCartCount, getCartItemsForUser } from "@/lib/cart-helpers";
 import { redirect } from "next/navigation";
+import Script from "next/script"; // IMPORTACIÓN DEL SCRIPT DE NEXT
 
 export default async function CarritoPage() {
   await ensureDb();
@@ -29,6 +30,11 @@ export default async function CarritoPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* SCRIPT INTEGRADO POR ALEJO: Le da soporte global al widget de Wompi */}
+      <Script
+        src="https://checkout.wompi.co/widget.js"
+        strategy="beforeInteractive"
+      />
       <TopNavBar cartCount={cartCount} showSearch={false} />
       <main className="flex-grow pt-20 pb-xl max-w-container-max mx-auto px-lg">
         {items.length === 0 ? (
