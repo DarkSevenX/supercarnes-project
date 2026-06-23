@@ -111,8 +111,8 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
   const availableCategories = useMemo(() => Object.keys(categoryCounts), [categoryCounts]);
 
   return (
-    <div className="flex flex-col lg:flex-row">
-      <div className="lg:w-64 flex-shrink-0">
+    <div className="flex flex-col lg:flex-row items-start w-full" style={{ minHeight: 'calc(100vh - 6rem)' }}>
+      <div className="w-full lg:w-64 flex-shrink-0 lg:min-h-screen">
         <ClientCatalogFilters 
           categories={categories}
           availableCategories={availableCategories}
@@ -121,7 +121,7 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
         />
       </div>
       
-      <div className="flex-1 lg:pl-lg">
+      <div className="flex-1 w-full lg:pl-lg">
 
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-lg">
@@ -149,7 +149,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
               onClick={() => {
                 setCategories([]);
                 setSearchTerm("");
-                // También limpiar la URL
                 if (typeof window !== 'undefined') {
                   const params = new URLSearchParams(window.location.search);
                   params.delete("search");

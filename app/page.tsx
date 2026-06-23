@@ -33,7 +33,7 @@ export default async function CatalogPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <TopNavBar activeLink="shop" cartCount={cartCount} />
-      <main className="flex-grow pt-24 pb-xl max-w-container-max mx-auto px-lg">
+      <main className="flex-grow pt-24 pb-xl max-w-container-max w-full mx-auto px-lg">
         <ClientCatalog initialProducts={allProducts} initialSearch={initialSearch} />
       </main>
       {/* <Footer variant="default" /> */}
