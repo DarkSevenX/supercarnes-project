@@ -33,10 +33,10 @@ export default function TopNavBar({
     const delayDebounceFn = setTimeout(() => {
       // Ignorar si no está visible y no hay término de búsqueda
       if (!isSearchVisible && search === "") return;
-      
+
       const params = new URLSearchParams(window.location.search);
       const currentQuery = params.get("search") || "";
-      
+
       // Si no ha cambiado, no hacer nada
       if (search.trim() === currentQuery && window.location.pathname === "/") return;
 
@@ -46,9 +46,9 @@ export default function TopNavBar({
         params.delete("search");
       }
       params.delete("page");
-      
+
       const newQueryString = params.toString();
-      
+
       if (window.location.pathname !== "/") {
         router.push(`/?${newQueryString}`);
       } else {
@@ -79,8 +79,8 @@ export default function TopNavBar({
         <Link href="/" className="flex items-center gap-md">
           <Image
             alt="La Victoriana Logo"
-            className="h-12 w-12 object-contain"
-            src="/logotipo.png"
+            className="h-12 w-12 object-cover rounded-full"
+            src="/logotipo.jpeg"
             width={48}
             height={48}
           />
@@ -95,17 +95,15 @@ export default function TopNavBar({
           {showSearch && (
             <div className="relative hidden lg:flex items-center h-10">
               <div
-                className={`relative flex items-center transition-all duration-300 ease-out ${
-                  isSearchVisible ? "w-64" : "w-10"
-                }`}
+                className={`relative flex items-center transition-all duration-300 ease-out ${isSearchVisible ? "w-64" : "w-10"
+                  }`}
               >
                 <input
                   ref={inputRef}
-                  className={`border-none outline-none focus:outline-none focus:ring-0 focus:border-transparent rounded-full py-xs text-body-md h-10 transition-all duration-300 ${
-                    isSearchVisible 
-                      ? "w-full pl-lg pr-10 opacity-100 bg-surface-container-low" 
+                  className={`border-none outline-none focus:outline-none focus:ring-0 focus:border-transparent rounded-full py-xs text-body-md h-10 transition-all duration-300 ${isSearchVisible
+                      ? "w-full pl-lg pr-10 opacity-100 bg-surface-container-low"
                       : "w-full px-0 opacity-0 bg-transparent cursor-pointer"
-                  }`}
+                    }`}
                   placeholder="Buscar..."
                   type="text"
                   value={search}
@@ -133,11 +131,10 @@ export default function TopNavBar({
           )}
           <Link
             href="/perfil"
-            className={`flex items-center p-sm transition-colors cursor-pointer active:scale-95 ${
-              activeLink === "perfil"
+            className={`flex items-center p-sm transition-colors cursor-pointer active:scale-95 ${activeLink === "perfil"
                 ? "text-primary border-b-2 border-primary"
                 : "text-secondary hover:text-primary"
-            }`}
+              }`}
           >
             <MaterialIcon name="person" />
           </Link>
@@ -154,10 +151,10 @@ export default function TopNavBar({
           </button>
         </div>
       </div>
-      
-      <CartSidebar 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
+
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </nav>
   );
