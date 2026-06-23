@@ -1,19 +1,19 @@
 "use client";
 
+import MaterialIcon from "./MaterialIcon";
+
 type ClientCatalogFiltersProps = {
   categories: string[];
-  maxPrice: number;
   availableCategories: string[];
+  categoryCounts: Record<string, number>;
   onCategoryToggle: (category: string) => void;
-  onPriceChange: (price: number) => void;
 };
 
 export default function ClientCatalogFilters({
   categories,
-  maxPrice,
   availableCategories,
-  onCategoryToggle,
-  onPriceChange
+  categoryCounts,
+  onCategoryToggle
 }: ClientCatalogFiltersProps) {
 
   return (
@@ -21,70 +21,52 @@ export default function ClientCatalogFilters({
       <div className="sticky top-24 space-y-lg">
         {/* Categorías */}
         <div>
-          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
+          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md flex items-center gap-2">
+            <MaterialIcon name="category" className="text-[20px]" />
             Categorías
           </h3>
           <ul className="space-y-sm">
+            <li key="todas">
+              <button
+                onClick={() => {
+                  categories.forEach(cat => onCategoryToggle(cat));
+                }}
+                className="flex items-center gap-sm cursor-pointer group text-left w-full"
+              >
+                <span
+                  className={`text-body-md transition-colors ${categories.length === 0
+                    ? "text-primary font-bold"
+                    : "text-secondary group-hover:text-primary"
+                    }`}
+                >
+                  Todas
+                </span>
+              </button>
+            </li>
             {availableCategories.map((cat) => (
               <li key={cat}>
-                <label className="flex items-center gap-sm cursor-pointer group">
-                  <input
-                    checked={categories.includes(cat)}
-                    onChange={() => onCategoryToggle(cat)}
-                    className="rounded-sm border-secondary-fixed-dim text-primary focus:ring-primary"
-                    type="checkbox"
-                  />
+                <button
+                  onClick={() => onCategoryToggle(cat)}
+                  className="flex items-center justify-between cursor-pointer group text-left w-full"
+                >
                   <span
-                    className={`text-body-md transition-colors ${
-                      categories.includes(cat)
-                        ? "text-on-surface group-hover:text-primary"
-                        : "text-secondary group-hover:text-primary"
-                    }`}
+                    className={`text-body-md transition-colors ${categories.includes(cat)
+                      ? "text-primary font-bold"
+                      : "text-secondary group-hover:text-primary"
+                      }`}
                   >
                     {cat}
                   </span>
-                </label>
+                  <span className={`text-[10px] rounded px-2 py-0.5 font-bold transition-colors ${categories.includes(cat)
+                      ? "bg-primary text-on-primary"
+                      : "bg-surface-container-high text-secondary group-hover:bg-primary-container group-hover:text-on-primary-container"
+                    }`}>
+                    {categoryCounts[cat] || 0}
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
-        </div>
-
-        {/* Rango de Precios */}
-        <div>
-          <h3 className="font-label-md text-label-md text-on-surface uppercase tracking-wider mb-md">
-            Rango de Precios
-          </h3>
-          <input
-            className="w-full accent-primary bg-surface-container-highest h-1 rounded-full appearance-none cursor-pointer"
-            type="range"
-            min={0}
-            max={5000000}
-            step={100000}
-            value={maxPrice}
-            onChange={(e) => onPriceChange(Number(e.target.value))}
-          />
-          <div className="flex justify-between mt-sm text-caption text-secondary">
-            <span>$0</span>
-            <span>${Math.floor(maxPrice / 1000)}k</span>
-            <span>$5.000.000+</span>
-          </div>
-        </div>
-
-        {/* Botón para resetear */}
-        <div>
-          <button
-            onClick={() => {
-              // Desmarcar todas las categorías
-              categories.forEach(cat => {
-                onCategoryToggle(cat);
-              });
-              // Restablecer precio máximo
-              onPriceChange(5000000);
-            }}
-            className="w-full bg-surface-container text-on-surface-variant py-2 rounded-lg text-caption font-semibold hover:bg-primary-container hover:text-on-primary-container transition-colors cursor-pointer"
-          >
-            Restablecer filtros
-          </button>
         </div>
       </div>
     </aside>

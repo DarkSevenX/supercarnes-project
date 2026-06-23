@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${inter.variable} ${playfair.variable} bg-background text-on-background font-body-md antialiased`}
       >
         {children}
+        <Script src="https://checkout.wompi.co/widget.js" strategy="afterInteractive" />
       </body>
     </html>
   );

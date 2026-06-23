@@ -58,10 +58,10 @@
   --spacing-container-max: 1280px;
   --spacing-gutter: 24px;
 
-  --font-headline-md: var(--font-playfair), "Playfair Display", serif;
-  --font-headline-lg: var(--font-playfair), "Playfair Display", serif;
-  --font-display-lg: var(--font-playfair), "Playfair Display", serif;
-  --font-display-lg-mobile: var(--font-playfair), "Playfair Display", serif;
+  --font-headline-md: var(--font-inter), "Inter", sans-serif;
+  --font-headline-lg: var(--font-inter), "Inter", sans-serif;
+  --font-display-lg: var(--font-inter), "Inter", sans-serif;
+  --font-display-lg-mobile: var(--font-inter), "Inter", sans-serif;
   --font-body-md: var(--font-inter), "Inter", sans-serif;
   --font-body-lg: var(--font-inter), "Inter", sans-serif;
   --font-label-md: var(--font-inter), "Inter", sans-serif;

@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import { getOrCreateCartSessionId, getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { cartItems, products } from "@/lib/db/schema"
+import { getCartItemsForUser } from "@/lib/cart-helpers"
+
 // primer cambio de alejo
 export async function addToCart(productId: number, quantity: number = 1) {
   const session = await getSession()
@@ -54,6 +56,7 @@ export async function addToCart(productId: number, quantity: number = 1) {
   revalidatePath('/carrito')
   return { success: true }
 }
+
 export async function updateCartItem(itemId: number, quantity: number) {
   if (quantity < 1) {
     return { success: false, error: "Cantidad debe ser mayor a 0" }
@@ -97,4 +100,10 @@ export async function removeCartItem(itemId: number) {
   
   revalidatePath('/carrito')
   return { success: true }
+}
+
+export async function getCartItemsAction() {
+  const session = await getSession();
+  const cartSessionId = await getOrCreateCartSessionId();
+  return await getCartItemsForUser(session, cartSessionId);
 }

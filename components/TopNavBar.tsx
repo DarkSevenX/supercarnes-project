@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import MaterialIcon from "./MaterialIcon";
+import CartSidebar from "./CartSidebar";
 
 type TopNavBarProps = {
   activeLink?: "shop" | "auth" | "carrito" | "perfil";
@@ -24,6 +25,8 @@ export default function TopNavBar({
 }: TopNavBarProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +42,7 @@ export default function TopNavBar({
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-surface shadow-sm border-b border-surface-container-highest">
-      <div className="max-w-container-max mx-auto flex justify-between items-center px-lg py-md h-20">
+      <div className="max-w-container-max mx-auto flex justify-between items-center px-lg py-sm h-16">
         <Link href="/" className="flex items-center gap-md">
           <Image
             alt="La Victoriana Logo"
@@ -48,62 +51,47 @@ export default function TopNavBar({
             width={48}
             height={48}
           />
-          <span className="font-headline-md text-headline-md font-bold text-primary">
+          <span className="font-body-lg text-headline-md font-bold text-primary">
             Super Carnes La Victoriana
           </span>
         </Link>
 
-        <div className="hidden md:flex gap-lg items-center">
-          {navLinks.map((link) => (
-            <Link
-              key={link.key}
-              href={link.href}
-              className={
-                activeLink === "shop" && link.key === "shop"
-                  ? "text-primary font-bold border-b-2 border-primary pb-1 font-label-md cursor-pointer active:scale-95 transition-colors duration-200"
-                  : "text-secondary hover:text-primary font-label-md cursor-pointer active:scale-95 transition-colors duration-200"
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
+
 
         <div className="flex items-center gap-md">
           {showSearch && (
-            <form
-              onSubmit={handleSearch}
-              className="relative hidden lg:block"
-            >
-              <input
-                className="bg-surface-container-low border-none rounded-full pl-lg pr-10 py-xs text-body-md w-64 focus:ring-1 focus:ring-primary"
-                placeholder="Buscar..."
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              {search && (
+            <div className="relative hidden lg:flex items-center h-10">
+              {isSearchVisible ? (
+                <form
+                  onSubmit={handleSearch}
+                  className="relative flex items-center"
+                >
+                  <input
+                    className="bg-surface-container-low border-none rounded-full pl-lg pr-10 py-xs text-body-md w-64 focus:ring-1 focus:ring-primary"
+                    placeholder="Buscar..."
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onBlur={() => setTimeout(() => setIsSearchVisible(false), 200)}
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
+                  >
+                    <MaterialIcon name="search" />
+                  </button>
+                </form>
+              ) : (
                 <button
                   type="button"
-                  onClick={() => {
-                    setSearch("");
-                    const params = new URLSearchParams(window.location.search);
-                    params.delete("search");
-                    window.history.replaceState(null, "", `/?${params.toString()}`);
-                    router.refresh();
-                  }}
-                  className="absolute right-10 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
+                  onClick={() => setIsSearchVisible(true)}
+                  className="text-secondary hover:text-primary p-2 flex items-center justify-center cursor-pointer"
                 >
-                  <MaterialIcon name="close" />
+                  <MaterialIcon name="search" />
                 </button>
               )}
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary"
-              >
-                <MaterialIcon name="search" />
-              </button>
-            </form>
+            </div>
           )}
           <Link
             href="/perfil"
@@ -115,8 +103,8 @@ export default function TopNavBar({
           >
             <MaterialIcon name="person" />
           </Link>
-          <Link
-            href="/carrito"
+          <button
+            onClick={() => setIsCartOpen(true)}
             className="flex items-center p-sm text-secondary hover:text-primary transition-colors cursor-pointer active:scale-95 relative"
           >
             <MaterialIcon name="shopping_cart" />
@@ -125,9 +113,14 @@ export default function TopNavBar({
                 {cartCount}
               </span>
             )}
-          </Link>
+          </button>
         </div>
       </div>
+      
+      <CartSidebar 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+      />
     </nav>
   );
 }

@@ -46,7 +46,7 @@ export async function createOrder(data: CheckoutData) {
     (sum, item) => sum + item.price * item.quantity,
     0,
   )
-  const shipping = 150
+  const shipping = 0
   const total = subtotal + shipping
 
   const orderNumber = `SC-${Date.now().toString().slice(-5)}`

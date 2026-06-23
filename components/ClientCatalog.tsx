@@ -29,7 +29,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
   
   // Estados para los filtros - empezar sin filtros
   const [categories, setCategories] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(5000000);
   const [searchTerm, setSearchTerm] = useState<string>(initialSearch);
 
   // Aplicar filtros cuando cambien
@@ -46,10 +45,7 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
     }
     
 
-    
-    // Filtrar por precio máximo
-    result = result.filter(product => product.price <= maxPrice);
-    
+
     // Filtrar por búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -61,21 +57,18 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
     }
     
     setFilteredProducts(result);
-  }, [products, categories, maxPrice, searchTerm]);
+  }, [products, categories, searchTerm]);
 
   const handleCategoryToggle = (category: string) => {
     setCategories(prev => {
       if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
+        return [];
       } else {
-        return [...prev, category];
+        return [category];
       }
     });
   };
 
-  const handlePriceChange = (price: number) => {
-    setMaxPrice(price);
-  };
 
   // Escuchar cambios en la URL para actualizar búsqueda
   useEffect(() => {
@@ -104,33 +97,34 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
     };
   }, [searchTerm]);
 
-  // Extraer categorías únicas de los productos
-  const availableCategories = useMemo(() => {
-    const cats = new Set(products.map(p => p.category));
-    return Array.from(cats);
+  // Extraer categorías únicas y sus conteos
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    products.forEach(p => {
+      if (p.category) {
+        counts[p.category] = (counts[p.category] || 0) + 1;
+      }
+    });
+    return counts;
   }, [products]);
+
+  const availableCategories = useMemo(() => Object.keys(categoryCounts), [categoryCounts]);
 
   return (
     <div className="flex flex-col lg:flex-row">
       <div className="lg:w-64 flex-shrink-0">
         <ClientCatalogFilters 
           categories={categories}
-          maxPrice={maxPrice}
           availableCategories={availableCategories}
+          categoryCounts={categoryCounts}
           onCategoryToggle={handleCategoryToggle}
-          onPriceChange={handlePriceChange}
         />
       </div>
       
       <div className="flex-1 lg:pl-lg">
-        <div className="flex justify-between items-center mb-lg border-b border-surface-container-highest pb-md">
-          <p className="font-body-md text-secondary">
-            <span className="font-bold text-on-surface">{filteredProducts.length}</span>{" "}
-            Productos Premium Encontrados
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-lg">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-lg">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
@@ -154,7 +148,6 @@ export default function ClientCatalog({ initialProducts, initialSearch = "" }: C
             <button
               onClick={() => {
                 setCategories([]);
-                setMaxPrice(5000000);
                 setSearchTerm("");
                 // También limpiar la URL
                 if (typeof window !== 'undefined') {

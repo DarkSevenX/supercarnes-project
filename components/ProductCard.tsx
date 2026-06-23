@@ -60,31 +60,17 @@ export default function ProductCard({
           height={300}
           unoptimized
         />
-        {badgeList.length > 0 && (
-          <div className="absolute top-4 left-4 flex gap-2">
-            {badgeList.map((badge) => (
-              <span
-                key={badge}
-                className={`${badgeClass(badge)} text-[10px] font-bold px-2 py-1 rounded uppercase tracking-tighter`}
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
-        )}
+
       </div>
-      <div className="p-lg flex flex-col flex-1">
-        <span className="text-caption font-label-md text-secondary uppercase mb-xs">
+      <div className="p-md flex flex-col flex-1">
+        <span className="text-caption font-label-md text-secondary uppercase mb-0">
           {category}
         </span>
-        <h3 className="font-headline-md text-headline-md text-on-surface mb-sm">
+        <h3 className="font-body-md font-bold text-on-surface mb-sm line-clamp-2">
           {name}
         </h3>
-        <p className="text-body-md text-secondary line-clamp-2 mb-md">
-          {description}
-        </p>
-        <div className="mt-auto pt-md flex justify-between items-center border-t border-surface-container">
-          <span className="font-bold text-headline-md text-primary">
+        <div className="mt-auto pt-sm flex justify-between items-center border-t border-surface-container">
+          <span className="font-bold text-body-lg text-primary">
             {formatCOP(price)}{" "}
             <small className="font-normal text-caption text-secondary">
               / {priceUnit}
@@ -94,10 +80,9 @@ export default function ProductCard({
             type="button"
             onClick={handleAddToCart}
             disabled={isPending}
-            className="bg-inverse-surface text-on-secondary px-lg py-sm rounded-lg font-label-md hover:bg-primary transition-colors cursor-pointer active:scale-95 flex items-center gap-sm disabled:opacity-60"
+            className="bg-inverse-surface text-on-secondary w-8 h-8 rounded-full font-label-md hover:bg-primary transition-colors cursor-pointer active:scale-95 flex items-center justify-center disabled:opacity-60"
           >
-            <MaterialIcon name="shopping_basket" className="text-[18px]" />
-            {isPending ? "..." : "Agregar"}
+            {isPending ? "..." : <span className="text-xl leading-none font-bold pb-[2px]">+</span>}
           </button>
         </div>
       </div>
