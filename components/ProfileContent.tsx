@@ -102,15 +102,9 @@ export default function ProfileContent({
           <p className="text-secondary font-body-md mb-md">{user.email}</p>
           <div className="flex flex-col gap-sm border-t border-outline-variant pt-md">
             <div className="flex items-center gap-sm text-on-surface-variant">
-              <MaterialIcon name="verified" className="text-primary" />
+              <MaterialIcon name="shopping_bag" className="text-primary" />
               <span className="text-label-md font-label-md">
-                Miembro Elite desde {user.memberSince}
-              </span>
-            </div>
-            <div className="flex items-center gap-sm text-on-surface-variant">
-              <MaterialIcon name="loyalty" className="text-primary" />
-              <span className="text-label-md font-label-md">
-                {user.loyaltyPoints.toLocaleString()} Carnes Points
+                {orders.length} {orders.length === 1 ? "Pedido realizado" : "Pedidos realizados"}
               </span>
             </div>
           </div>
@@ -144,7 +138,7 @@ export default function ProfileContent({
       <section className="lg:col-span-8 flex flex-col gap-xl">
         <div className="space-y-md">
           <div className="flex justify-between items-end">
-            <h2 className="text-headline-lg font-headline-lg text-on-surface">
+            <h2 className="text-xl font-bold text-on-surface">
               Mis Pedidos
             </h2>
             <a className="text-primary text-label-md font-label-md hover:underline" href="#">
@@ -223,7 +217,7 @@ export default function ProfileContent({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-lg">
           <div className="space-y-md">
             <div className="flex justify-between items-end">
-              <h2 className="text-headline-md font-headline-md text-on-surface">
+              <h2 className="text-lg font-bold text-on-surface">
                 Direcciones
               </h2>
               <button
@@ -277,7 +271,7 @@ export default function ProfileContent({
 
           <div className="space-y-md">
             <div className="flex justify-between items-end">
-              <h2 className="text-headline-md font-headline-md text-on-surface">
+              <h2 className="text-lg font-bold text-on-surface">
                 Pagos
               </h2>
               <button
@@ -326,7 +320,7 @@ export default function ProfileContent({
           </div>
         </div>
 
-        <div className="bg-primary p-lg rounded-xl text-white flex flex-col md:flex-row justify-between items-center gap-lg">
+        <div className="hidden bg-primary p-lg rounded-xl text-white flex-col md:flex-row justify-between items-center gap-lg">
           <div>
             <h3 className="text-headline-md font-headline-md mb-xs">
               Ofertas Exclusivas
