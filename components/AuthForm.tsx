@@ -258,8 +258,8 @@ export default function AuthForm() {
               </div>
             </div>
 
-            <button
-              type="button"
+            <a
+              href={`/api/auth/google?redirect=${encodeURIComponent(redirectTo)}`}
               className="w-full flex items-center justify-center space-x-md border border-outline-variant py-md rounded-lg hover:bg-surface-container transition-colors group"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -271,7 +271,7 @@ export default function AuthForm() {
               <span className="text-label-md text-on-surface group-hover:text-primary transition-colors">
                 GOOGLE
               </span>
-            </button>
+            </a>
           </div>
         </div>
 

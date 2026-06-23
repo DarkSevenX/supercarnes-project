@@ -33,6 +33,11 @@ export async function loginAction(data: LoginData, redirectTo: string = "/") {
     return { success: false, error: "Credenciales inválidas" }
   }
 
+  // Google-only users can't login with password
+  if (user.passwordHash === "__google_oauth__") {
+    return { success: false, error: "Esta cuenta usa Google. Inicia sesión con el botón de Google." }
+  }
+
   const valid = await compare(password, user.passwordHash)
   if (!valid) {
     return { success: false, error: "Credenciales inválidas" }
