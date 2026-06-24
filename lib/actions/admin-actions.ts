@@ -219,9 +219,9 @@ export async function deleteCategoryAction(id: number) {
     return { success: true };
   } catch (error: any) {
     console.error("Error al eliminar categoría:", error);
-    return { 
-      success: false, 
-      error: "No se puede eliminar la categoría porque tiene productos vinculados." 
+    return {
+      success: false,
+      error: "No se puede eliminar la categoría porque tiene productos vinculados."
     };
   }
 }
@@ -346,27 +346,5 @@ export async function getAdminOrdersAndCustomers() {
     orderItems: orderItemsMap,
     customers: customersList,
     recentOrders: recentOrdersData,
-  }
-}
-
-// ACCIÓN PARA ACTUALIZAR LA FOTO DE UN PRODUCTO / CORTE DE CARNE
-export async function updateProductImage(productId: number, imageUrl: string) {
-  try {
-    await requireAdmin()
-
-    await db
-      .update(products)
-      .set({
-        imageUrl: imageUrl,
-      })
-      .where(eq(products.id, productId))
-
-    revalidatePath('/')
-    revalidatePath('/admin')
-    
-    return { success: true }
-  } catch (error) {
-    console.error("❌ Error al guardar la imagen del producto:", error)
-    return { success: false, error: "No se pudo actualizar la imagen en la base de datos." }
   }
 }
