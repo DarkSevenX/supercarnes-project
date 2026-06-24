@@ -13,6 +13,7 @@ type ProductFormData = {
   price: number;
   priceUnit: string;
   imageUrl: string;
+  imageFile?: File | null;
   stockKg: number;
   badges: string[];
 };
@@ -45,6 +46,7 @@ export default function ProductFormModal({
     price: initialData.price || 0,
     priceUnit: initialData.priceUnit || "kg",
     imageUrl: initialData.imageUrl || "",
+    imageFile: null,
     stockKg: initialData.stockKg || 0,
     badges: initialData.badges || [],
   });
@@ -175,15 +177,24 @@ export default function ProductFormModal({
 
             <div>
               <label className="block text-label-md text-secondary mb-2">
-                URL de Imagen
+                Imagen del Producto (Upload)
               </label>
               <input
-                type="url"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                className="w-full p-sm border border-outline rounded-lg bg-surface-container"
-                placeholder="https://ejemplo.com/imagen.jpg"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setFormData({ ...formData, imageFile: file });
+                  }
+                }}
+                className="w-full p-sm border border-outline rounded-lg bg-surface-container file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-on-primary hover:file:bg-primary-container hover:file:text-on-primary-container"
               />
+              {formData.imageUrl && !formData.imageFile && (
+                <div className="mt-2 text-caption text-secondary">
+                  Imagen actual: <a href={formData.imageUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">Ver</a>
+                </div>
+              )}
             </div>
 
             <div>

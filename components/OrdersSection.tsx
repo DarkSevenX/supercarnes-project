@@ -31,6 +31,7 @@ type OrdersSectionProps = {
   orderItems: Record<number, OrderItem[]>;
   onUpdateStatus: (orderId: number, newStatus: string) => void;
   loading: boolean;
+  onShowAlert?: (title: string, message: React.ReactNode) => void;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -61,6 +62,7 @@ export default function OrdersSection({
   orderItems,
   onUpdateStatus,
   loading,
+  onShowAlert,
 }: OrdersSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -327,7 +329,7 @@ export default function OrdersSection({
                         className="text-secondary hover:text-primary transition-colors"
                         onClick={(e) => {
                           e.stopPropagation();
-                          alert(`Ver detalles del pedido ${order.orderNumber}`);
+                          setExpandedOrder(expandedOrder === order.id ? null : order.id);
                         }}
                       >
                         <MaterialIcon name="visibility" />
@@ -418,7 +420,10 @@ export default function OrdersSection({
                             <button
                               type="button"
                               className="text-primary hover:underline text-caption"
-                              onClick={() => alert(`Contactar a ${order.customerName}`)}
+                              onClick={() => {
+                                if (onShowAlert) onShowAlert("Contactar Cliente", `Se abrirá la ventana para contactar a ${order.customerName}`);
+                                else alert(`Contactar a ${order.customerName}`);
+                              }}
                             >
                               <MaterialIcon name="mail" className="inline mr-xs" />
                               Contactar Cliente
@@ -469,7 +474,10 @@ export default function OrdersSection({
             <button
               type="button"
               className="text-primary hover:underline text-caption"
-              onClick={() => alert("Función de exportar no implementada aún")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("En Desarrollo", "Función de exportar no implementada aún");
+                else alert("Función de exportar no implementada aún");
+              }}
             >
               <MaterialIcon name="download" className="inline mr-xs" />
               Exportar CSV
@@ -541,7 +549,10 @@ export default function OrdersSection({
           <button
             type="button"
             className="w-full mt-lg py-sm border border-primary text-primary rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-colors text-center"
-            onClick={() => alert("Configurar métodos de pago")}
+            onClick={() => {
+              if (onShowAlert) onShowAlert("Configuración", "Configurar métodos de pago");
+              else alert("Configurar métodos de pago");
+            }}
           >
             <MaterialIcon name="settings" className="inline mr-xs" />
             Configurar Métodos de Pago

@@ -24,6 +24,7 @@ type InventorySectionProps = {
   onDeleteProduct: (id: number) => void;
   onAddProduct: () => void;
   loading: boolean;
+  onShowAlert?: (title: string, message: React.ReactNode) => void;
 };
 
 const gradeBadge = (grade: string | null) => {
@@ -46,6 +47,7 @@ export default function InventorySection({
   onDeleteProduct,
   onAddProduct,
   loading,
+  onShowAlert,
 }: InventorySectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -312,7 +314,10 @@ export default function InventorySection({
             <button
               type="button"
               className="text-primary hover:underline text-caption"
-              onClick={() => alert("Función de exportar no implementada aún")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("En Desarrollo", "Función de exportar no implementada aún");
+                else alert("Función de exportar no implementada aún");
+              }}
             >
               <MaterialIcon name="download" className="inline mr-xs" />
               Exportar CSV

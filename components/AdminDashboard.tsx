@@ -14,9 +14,11 @@ import {
   createCategoryAction,
   updateCategoryAction,
   deleteCategoryAction,
+  uploadImageAction,
 } from "@/lib/actions/admin-actions";
 import MaterialIcon from "./MaterialIcon";
 import ProductFormModal from "./ProductFormModal";
+import ConfirmModal from "./ConfirmModal";
 import InventorySection from "./InventorySection";
 import CustomersSection from "./CustomersSection";
 import OrdersSection from "./OrdersSection";
@@ -83,6 +85,28 @@ export default function AdminDashboard({
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [currentProducts, setCurrentProducts] = useState<AdminProduct[]>(products);
   const [currentCategories, setCurrentCategories] = useState<AdminCategory[]>(categories);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: React.ReactNode;
+    type: "alert" | "confirm" | "info";
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "confirm"
+  });
+
+  const showAlert = (title: string, message: React.ReactNode, type: "alert" | "info" = "info") => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      type,
+      onConfirm: undefined,
+    });
+  };
 
   const showToast = (message: string = "Inventario actualizado exitosamente.") => {
     setToast({ show: true, message });
@@ -144,19 +168,30 @@ export default function AdminDashboard({
   const handleDeleteCategory = (category: AdminCategory) => {
     const linkedProductsCount = currentProducts.filter(p => p.category === category.name).length;
     if (linkedProductsCount > 0) {
-      alert(`No se puede eliminar la categoría "${category.name}" porque tiene ${linkedProductsCount} producto(s) vinculado(s).`);
+      setConfirmModal({
+        isOpen: true,
+        title: "No se puede eliminar",
+        message: `No se puede eliminar la categoría "${category.name}" porque tiene ${linkedProductsCount} producto(s) vinculado(s).`,
+        type: "alert"
+      });
       return;
     }
 
-    if (!confirm(`¿Estás seguro de eliminar la categoría "${category.name}"?`)) return;
-
-    startTransition(async () => {
-      const result = await deleteCategoryAction(category.id);
-      if (result.success) {
-        setCurrentCategories(currentCategories.filter(c => c.id !== category.id));
-        showToast("Categoría eliminada exitosamente");
-      } else {
-        showToast(result.error || "Error al eliminar la categoría");
+    setConfirmModal({
+      isOpen: true,
+      title: "Eliminar Categoría",
+      message: `¿Estás seguro de eliminar la categoría "${category.name}"?`,
+      type: "confirm",
+      onConfirm: () => {
+        startTransition(async () => {
+          const result = await deleteCategoryAction(category.id);
+          if (result.success) {
+            setCurrentCategories(currentCategories.filter(c => c.id !== category.id));
+            showToast("Categoría eliminada exitosamente");
+          } else {
+            showToast(result.error || "Error al eliminar la categoría");
+          }
+        });
       }
     });
   };
@@ -172,16 +207,22 @@ export default function AdminDashboard({
   };
 
   const handleDeleteProduct = (id: number) => {
-    if (!confirm("¿Estás seguro de eliminar este producto?")) return;
-
-    startTransition(async () => {
-      try {
-        await deleteProduct(id);
-        setCurrentProducts(currentProducts.filter(p => p.id !== id));
-        showToast("Producto eliminado exitosamente");
-      } catch (error) {
-        console.error("Error al eliminar producto:", error);
-        showToast("Error al eliminar producto");
+    setConfirmModal({
+      isOpen: true,
+      title: "Eliminar Producto",
+      message: "¿Estás seguro de eliminar este producto?",
+      type: "confirm",
+      onConfirm: () => {
+        startTransition(async () => {
+          try {
+            await deleteProduct(id);
+            setCurrentProducts(currentProducts.filter(p => p.id !== id));
+            showToast("Producto eliminado exitosamente");
+          } catch (error) {
+            console.error("Error al eliminar producto:", error);
+            showToast("Error al eliminar producto");
+          }
+        });
       }
     });
   };
@@ -189,14 +230,32 @@ export default function AdminDashboard({
   const handleSubmitProduct = (productData: any) => {
     startTransition(async () => {
       try {
+        let finalImageUrl = productData.imageUrl;
+        if (productData.imageFile) {
+          const formData = new FormData();
+          formData.append("file", productData.imageFile);
+          
+          const uploadRes = await uploadImageAction(formData);
+          if (uploadRes.success) {
+            finalImageUrl = uploadRes.url;
+          } else {
+            showToast("Error al subir imagen");
+            return;
+          }
+        }
+        
+        // Remove imageFile from data sent to server actions
+        const { imageFile, ...dataToSave } = productData;
+        dataToSave.imageUrl = finalImageUrl;
+
         if (editingProduct) {
-          await updateProduct(editingProduct.id, productData);
+          await updateProduct(editingProduct.id, dataToSave);
           setCurrentProducts(currentProducts.map(p => 
-            p.id === editingProduct.id ? { ...p, ...productData } : p
+            p.id === editingProduct.id ? { ...p, ...dataToSave } : p
           ));
           showToast("Producto actualizado exitosamente");
         } else {
-          const result = await createProduct(productData);
+          const result = await createProduct(dataToSave);
           if (result.success && result.product) {
             setCurrentProducts([...currentProducts, result.product as any]);
           }
@@ -276,6 +335,7 @@ export default function AdminDashboard({
             onDeleteProduct={handleDeleteProduct}
             onAddProduct={handleAddProduct}
             loading={isPending}
+            onShowAlert={showAlert}
           />
         );
       
@@ -368,6 +428,7 @@ export default function AdminDashboard({
           <CustomersSection
             customers={customerData}
             recentOrders={recentOrdersData}
+            onShowAlert={showAlert}
           />
         );
       
@@ -378,6 +439,7 @@ export default function AdminDashboard({
             orderItems={orderItemsData}
             onUpdateStatus={handleUpdateOrderStatus}
             loading={isPending}
+            onShowAlert={showAlert}
           />
         );
       
@@ -773,6 +835,15 @@ export default function AdminDashboard({
           badges: editingProduct.grade ? [editingProduct.grade] : [],
         } : {}}
         title={editingProduct ? "Editar Producto" : "Agregar Producto"}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
       />
 
       <div

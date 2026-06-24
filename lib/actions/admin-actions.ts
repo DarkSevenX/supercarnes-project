@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { products, orders, users, orderItems, categories } from "@/lib/db/schema"
+import { writeFile, mkdir } from "fs/promises"
+import { join } from "path"
 
 // Verificar si el usuario es admin
 async function requireAdmin() {
@@ -13,6 +15,33 @@ async function requireAdmin() {
     throw new Error("No autorizado")
   }
   return session
+}
+
+// Subir Imagen
+export async function uploadImageAction(formData: FormData) {
+  await requireAdmin()
+  const file = formData.get("file") as File
+  if (!file) {
+    throw new Error("No se ha proporcionado ningún archivo")
+  }
+
+  const bytes = await file.arrayBuffer()
+  const buffer = Buffer.from(bytes)
+
+  const uploadDir = join(process.cwd(), "public", "uploads")
+  
+  try {
+    await mkdir(uploadDir, { recursive: true })
+  } catch (e) {
+    // ignore
+  }
+
+  const uniqueName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`
+  const filePath = join(uploadDir, uniqueName)
+
+  await writeFile(filePath, buffer)
+  
+  return { success: true, url: `/uploads/${uniqueName}` }
 }
 
 // Productos

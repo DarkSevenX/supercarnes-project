@@ -32,6 +32,7 @@ type AnalyticsSectionProps = {
   customerSegments: CustomerSegment[];
   timeRange: "week" | "month" | "quarter" | "year";
   onTimeRangeChange: (range: "week" | "month" | "quarter" | "year") => void;
+  onShowAlert?: (title: string, message: React.ReactNode) => void;
 };
 
 const TIME_RANGE_OPTIONS = [
@@ -55,6 +56,7 @@ export default function AnalyticsSection({
   customerSegments,
   timeRange,
   onTimeRangeChange,
+  onShowAlert,
 }: AnalyticsSectionProps) {
   const [selectedMetric, setSelectedMetric] = useState<"revenue" | "orders" | "customers">("revenue");
   const [viewMode, setViewMode] = useState<"chart" | "table">("chart");
@@ -386,7 +388,10 @@ export default function AnalyticsSection({
           <button
             type="button"
             className="w-full mt-lg py-sm border border-surface-variant/20 rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all text-center"
-            onClick={() => alert("Ver análisis completo de productos")}
+            onClick={() => {
+              if (onShowAlert) onShowAlert("En Desarrollo", "Ver análisis completo de productos");
+              else alert("Ver análisis completo de productos");
+            }}
           >
             Ver Análisis Completo de Productos
           </button>
@@ -438,14 +443,20 @@ export default function AnalyticsSection({
             <button
               type="button"
               className="w-full py-sm bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary-container transition-colors text-center mb-sm"
-              onClick={() => alert("Crear campaña segmentada")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("Marketing", "Crear campaña segmentada");
+                else alert("Crear campaña segmentada");
+              }}
             >
               Crear Campaña Segmentada
             </button>
             <button
               type="button"
               className="w-full py-sm border border-primary text-primary rounded-lg font-label-md hover:bg-primary hover:text-on-primary transition-colors text-center"
-              onClick={() => alert("Exportar datos de segmentación")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("En Desarrollo", "Exportar datos de segmentación");
+                else alert("Exportar datos de segmentación");
+              }}
             >
               Exportar Datos de Segmentación
             </button>
@@ -512,7 +523,10 @@ export default function AnalyticsSection({
         <button
           type="button"
           className="w-full mt-lg py-sm bg-on-primary-container text-primary-container rounded-lg font-label-md hover:opacity-90 transition-opacity text-center"
-          onClick={() => alert("Generar reporte ejecutivo")}
+          onClick={() => {
+            if (onShowAlert) onShowAlert("Reportes", "Generar reporte ejecutivo");
+            else alert("Generar reporte ejecutivo");
+          }}
         >
           <MaterialIcon name="description" className="inline mr-sm" />
           Generar Reporte Ejecutivo PDF

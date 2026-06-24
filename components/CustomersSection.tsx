@@ -28,6 +28,7 @@ type Order = {
 type CustomersSectionProps = {
   customers: Customer[];
   recentOrders: Order[];
+  onShowAlert?: (title: string, message: React.ReactNode) => void;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -47,6 +48,7 @@ const STATUS_LABELS: Record<string, string> = {
 export default function CustomersSection({
   customers,
   recentOrders,
+  onShowAlert,
 }: CustomersSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTier, setSelectedTier] = useState("all");
@@ -269,14 +271,51 @@ export default function CustomersSection({
                       <button
                         type="button"
                         className="text-secondary hover:text-primary transition-colors"
-                        onClick={() => alert(`Ver detalles de ${customer.name}`)}
+                        onClick={() => {
+                          if (onShowAlert) {
+                            onShowAlert("Detalles de Cliente", (
+                              <div className="space-y-4 text-left">
+                                <div className="flex items-center gap-4 mb-4">
+                                  <img src={customer.avatarUrl || "/placeholder-avatar.jpg"} className="w-12 h-12 rounded-full border border-gray-200 object-cover" />
+                                  <div>
+                                    <div className="font-bold text-gray-900 text-lg">{customer.name}</div>
+                                    <div className="text-gray-500 text-sm">{customer.email}</div>
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Miembro Desde</div>
+                                    <div className="font-medium text-gray-900">{customer.memberSince}</div>
+                                  </div>
+                                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <div className="text-xs text-blue-600 uppercase font-semibold mb-1">Puntos</div>
+                                    <div className="font-bold text-blue-700">{customer.loyaltyPoints.toLocaleString()} pts</div>
+                                  </div>
+                                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Gastado</div>
+                                    <div className="font-medium text-gray-900">{formatCOP(customer.totalSpent)}</div>
+                                  </div>
+                                  <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <div className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Pedidos</div>
+                                    <div className="font-medium text-gray-900">{customer.orderCount}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            ));
+                          } else {
+                            alert(`Ver detalles de ${customer.name}`);
+                          }
+                        }}
                       >
                         <MaterialIcon name="visibility" />
                       </button>
                       <button
                         type="button"
                         className="text-secondary hover:text-primary transition-colors"
-                        onClick={() => alert(`Contactar a ${customer.name}`)}
+                        onClick={() => {
+                          if (onShowAlert) onShowAlert("Contactar Cliente", `Contactar a ${customer.name}`);
+                          else alert(`Contactar a ${customer.name}`);
+                        }}
                       >
                         <MaterialIcon name="mail" />
                       </button>
@@ -302,7 +341,10 @@ export default function CustomersSection({
             <button
               type="button"
               className="text-primary hover:underline text-caption"
-              onClick={() => alert("Ver todos los clientes")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("En Desarrollo", "Ver todos los clientes");
+                else alert("Ver todos los clientes");
+              }}
             >
               Ver Todos los Clientes →
             </button>
@@ -346,7 +388,36 @@ export default function CustomersSection({
                     <button
                       type="button"
                       className="text-secondary hover:text-primary text-caption"
-                      onClick={() => alert(`Ver pedido #${order.id}`)}
+                      onClick={() => {
+                        if (onShowAlert) {
+                          onShowAlert(`Pedido #${order.id}`, (
+                            <div className="text-left space-y-4">
+                              <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase font-semibold">Cliente</div>
+                                  <div className="font-medium text-gray-900">{order.customerName}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-xs text-gray-500 uppercase font-semibold">Fecha</div>
+                                  <div className="font-medium text-gray-900">{order.date}</div>
+                                </div>
+                              </div>
+                              <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex justify-between items-center">
+                                <div>
+                                  <div className="text-xs text-gray-500 uppercase font-semibold">Estado</div>
+                                  <span className={`px-2 py-1 rounded text-xs font-bold ${STATUS_COLORS[order.status] || "bg-gray-200 text-gray-700"}`}>
+                                    {STATUS_LABELS[order.status] || order.status}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-xs text-gray-500 uppercase font-semibold">Total</div>
+                                  <div className="font-bold text-lg text-red-700">{formatCOP(order.total)}</div>
+                                </div>
+                              </div>
+                            </div>
+                          ));
+                        } else alert(`Ver pedido #${order.id}`);
+                      }}
                     >
                       Detalles
                     </button>
@@ -358,7 +429,10 @@ export default function CustomersSection({
             <button
               type="button"
               className="w-full mt-lg py-sm border border-surface-variant/20 rounded-lg font-label-md text-label-md hover:bg-surface-container transition-all text-center"
-              onClick={() => alert("Ver todos los pedidos")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("En Desarrollo", "Ver todos los pedidos");
+                else alert("Ver todos los pedidos");
+              }}
             >
               Ver Todos los Pedidos
             </button>
@@ -411,7 +485,10 @@ export default function CustomersSection({
             <button
               type="button"
               className="w-full mt-lg py-sm bg-on-primary-container text-primary-container rounded-lg font-label-md hover:opacity-90 transition-opacity"
-              onClick={() => alert("Crear campaña de marketing")}
+              onClick={() => {
+                if (onShowAlert) onShowAlert("Marketing", "Crear campaña de marketing");
+                else alert("Crear campaña de marketing");
+              }}
             >
               Crear Campaña de Marketing
             </button>

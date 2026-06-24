@@ -17,9 +17,6 @@ type PageProps = {
 export default async function CatalogPage({ searchParams }: PageProps) {
   await ensureDb();
   const session = await getSession();
-  if (session && session.role === "admin") {
-    redirect("/admin");
-  }
   const cartSessionId = await getCartSessionId();
   const cartCount = await getCartCount(session, cartSessionId);
 
