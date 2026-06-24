@@ -348,3 +348,25 @@ export async function getAdminOrdersAndCustomers() {
     recentOrders: recentOrdersData,
   }
 }
+
+// ACCIÓN PARA ACTUALIZAR LA FOTO DE UN PRODUCTO / CORTE DE CARNE
+export async function updateProductImage(productId: number, imageUrl: string) {
+  try {
+    await requireAdmin()
+
+    await db
+      .update(products)
+      .set({
+        imageUrl: imageUrl,
+      })
+      .where(eq(products.id, productId))
+
+    revalidatePath('/')
+    revalidatePath('/admin')
+    
+    return { success: true }
+  } catch (error) {
+    console.error("❌ Error al guardar la imagen del producto:", error)
+    return { success: false, error: "No se pudo actualizar la imagen en la base de datos." }
+  }
+}
