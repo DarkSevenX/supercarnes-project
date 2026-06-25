@@ -56,6 +56,7 @@ export default async function PerfilPage() {
         status: order.status,
         total: order.total,
         createdAt: order.createdAt,
+        paymentMethod: order.paymentMethod,
         itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
         imageUrl: items[0]?.productImage ?? null,
       };

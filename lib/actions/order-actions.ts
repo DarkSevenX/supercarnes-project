@@ -15,6 +15,7 @@ type CheckoutData = {
   zip: string
   phone: string
   paymentMethod?: string
+  cashAmount?: number
 }
 
 export async function createOrder(data: CheckoutData) {
@@ -31,41 +32,43 @@ export async function createOrder(data: CheckoutData) {
     return { success: false, error: "El carrito está vacío" }
   }
 
-  const {
-    firstName,
-    address,
-    city,
-    zip,
-    phone,
-    paymentMethod = "card",
-  } = data
+    const {
+      firstName,
+      address,
+      city,
+      zip,
+      phone,
+      paymentMethod = "card",
+      cashAmount,
+    } = data
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0,
-  )
-  const shipping = 0
-  const total = subtotal + shipping
+    const subtotal = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
+    )
+    const shipping = 0
+    const total = subtotal + shipping
 
-  const orderNumber = `SC-${Date.now().toString().slice(-5)}`
+    const orderNumber = `SC-${Date.now().toString().slice(-5)}`
 
-  // Crear orden
-  const [order] = await db
-    .insert(orders)
-    .values({
-      userId: session.userId,
-      orderNumber,
-      status: "received",
-      subtotal,
-      shipping,
-      total,
-      paymentMethod,
-      shippingAddress: JSON.stringify({
-        name: firstName,
-        street: address,
-        city,
-        zip,
-      }),
+    // Crear orden
+    const [order] = await db
+      .insert(orders)
+      .values({
+        userId: session.userId,
+        orderNumber,
+        status: "received",
+        subtotal,
+        shipping,
+        total,
+        paymentMethod,
+        shippingAddress: JSON.stringify({
+          name: firstName,
+          street: address,
+          city,
+          zip,
+          cashAmount,
+        }),
       contactPhone: phone,
       deliveryNotes: "",
       driverName: "Carlos Mendoza",
@@ -116,6 +119,6 @@ export async function createOrder(data: CheckoutData) {
   revalidatePath('/carrito')
   revalidatePath('/perfil')
   
-  // Redirigir a la página del pedido
-  redirect(`/pedido/${order.id}`)
+  // Redirigir a la página de éxito del pedido
+  redirect(`/pedido/success/${order.id}`)
 }

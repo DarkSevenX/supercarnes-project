@@ -21,6 +21,7 @@ type ProfileOrder = {
   status: string;
   total: number;
   createdAt: string;
+  paymentMethod?: string | null;
   itemCount: number;
   imageUrl: string | null;
 };
@@ -210,23 +211,35 @@ export default function ProfileContent({
                   >
                     {ORDER_STATUS_LABELS[order.status] ?? order.status}
                   </span>
-                  {order.status === "in_transit" ? (
+                  <div className="flex items-center gap-3 mt-1">
+                    {order.status !== "delivered" && order.paymentMethod === "transferencia" && (
+                      <Link
+                        href={`/pedido/success/${order.id}`}
+                        className="text-primary hover:text-on-primary-fixed-variant transition-colors flex items-center gap-1 text-label-md font-label-md"
+                      >
+                        Enviar comprobante
+                        <MaterialIcon name="send" className="text-[16px]" />
+                      </Link>
+                    )}
+                    
                     <Link
                       href={`/pedido/${order.id}`}
                       className="text-secondary hover:text-on-surface transition-colors flex items-center gap-1 text-label-md font-label-md"
                     >
-                      Rastrear Pedido{" "}
+                      Rastrear Pedido
                       <MaterialIcon name="chevron_right" className="text-[18px]" />
                     </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      className="text-primary hover:text-on-primary-fixed-variant transition-colors flex items-center gap-1 text-label-md font-label-md"
-                    >
-                      Comprar de nuevo{" "}
-                      <MaterialIcon name="replay" className="text-[18px]" />
-                    </button>
-                  )}
+
+                    {order.status === "delivered" && (
+                      <button
+                        type="button"
+                        className="text-primary hover:text-on-primary-fixed-variant transition-colors flex items-center gap-1 text-label-md font-label-md"
+                      >
+                        Comprar de nuevo
+                        <MaterialIcon name="replay" className="text-[18px]" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

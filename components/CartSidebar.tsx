@@ -95,6 +95,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
       const result = await createOrder({
         ...form,
         paymentMethod,
+        cashAmount: paymentMethod === "efectivo" ? cashAmountNum : undefined,
       });
       if (result && !result.success) {
         if (result.error === "Debe iniciar sesión") {
@@ -368,6 +369,27 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                     <MaterialIcon name="payments" className={`text-[18px] ${paymentMethod === "efectivo" ? "text-primary" : "text-secondary"}`} />
                   </label>
                 </div>
+
+                {paymentMethod === "transferencia" && (
+                  <div className="bg-surface-container-lowest p-md border border-surface-container rounded-lg space-y-md mt-sm">
+                    <div className="border-b border-surface-container pb-sm mb-sm">
+                      <h4 className="font-bold text-primary flex items-center gap-2">
+                        <MaterialIcon name="info" className="text-[18px]" />
+                        Información de pago
+                      </h4>
+                      <p className="text-body-sm text-secondary mt-1">
+                        Desde la App Bancolombia o Cajero, debes transferir a Cuenta Ahorros Bancolombia 166-000011-84
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-sm pt-sm">
+                      <div className="flex justify-between items-center text-on-surface border-t border-surface-container pt-sm">
+                        <span className="font-bold">Total:</span>
+                        <span className="font-bold text-sm text-primary">{formatCOP(total)}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {paymentMethod === "efectivo" && (
                   <div className="bg-surface-container-lowest p-md border border-surface-container rounded-lg space-y-md mt-sm">
