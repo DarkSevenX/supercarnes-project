@@ -95,7 +95,22 @@ export default function AuthForm() {
 
           <div className="p-lg md:p-xl">
             {error && (
-              <p className="text-error text-caption mb-md text-center">{error}</p>
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
+                <div className="bg-surface-container-lowest p-xl rounded-xl shadow-2xl w-[90vw] sm:w-[450px] border border-error/20 flex flex-col items-center animate-in zoom-in-95 duration-200">
+                  <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mb-md text-error">
+                    <MaterialIcon name="error_outline" className="text-[32px]" />
+                  </div>
+                  <h3 className="text-headline-sm font-headline-sm text-on-surface mb-xs text-center">Error de Autenticación</h3>
+                  <p className="text-body-lg text-secondary text-center mb-xl">{error}</p>
+                  <button 
+                    onClick={() => setError("")}
+                    type="button"
+                    className="w-full bg-error text-white py-md rounded-lg font-label-md tracking-wide hover:bg-error/90 transition-colors"
+                  >
+                    ENTENDIDO
+                  </button>
+                </div>
+              </div>
             )}
 
             {tab === "login" ? (

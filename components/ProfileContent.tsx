@@ -78,23 +78,42 @@ export default function ProfileContent({
       <aside className="lg:col-span-4 flex flex-col gap-lg">
         <div className="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant/30 text-center lg:text-left">
           <div className="relative w-32 h-32 mx-auto lg:mx-0 mb-md">
-            <Image
-              alt="Avatar"
-              className="w-full h-full rounded-full object-cover border-4 border-primary-fixed shadow-md"
-              src={
-                user.avatarUrl ??
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuAtYvY_6wGhj5Oe8w5bF-avFTKL_ilHYmzWxhsFqhep_gNP5KVSwSzsREpVGOYC1FXnJcLM6FAdAR1fGbcPaM-_lW736rUQ4ps551XO5t5Y9cQfby9nT61c5Um494RTViCDTCP7CwCxwMWBIdP2-VWEvjzzfZkrkjPRECNqGfbOcL_RdKUCfyYhjWeMlZsgE7f1GD9LDcyGdFV44DvVy_JsnkxBrfko5z7AmqRhphS5BvC1z2pLBxWDVHBXsqcfM_7WrNASHg1mvQk"
-              }
-              width={128}
-              height={128}
-              unoptimized
-            />
-            <button
-              type="button"
-              className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-on-primary-fixed-variant transition-colors"
+            {user.avatarUrl ? (
+              <Image
+                alt="Avatar"
+                className="w-full h-full rounded-full object-cover border-4 border-primary-fixed shadow-md"
+                src={user.avatarUrl}
+                width={128}
+                height={128}
+                unoptimized
+              />
+            ) : (
+              <div className="w-full h-full rounded-full border-4 border-primary-fixed shadow-md bg-surface-container-high flex items-center justify-center text-primary overflow-hidden">
+                <span className="text-[64px] uppercase font-bold tracking-widest pl-1">
+                  {user.name ? user.name.charAt(0) : "U"}
+                </span>
+              </div>
+            )}
+            <label
+              htmlFor="avatar-upload"
+              className="absolute bottom-1 right-1 bg-primary text-white w-8 h-8 flex items-center justify-center rounded-full shadow-lg hover:bg-on-primary-fixed-variant transition-colors cursor-pointer"
+              title="Cambiar foto de perfil"
             >
-              <MaterialIcon name="edit" className="text-[18px]" />
-            </button>
+              <MaterialIcon name="edit" className="text-[16px]" />
+              <input 
+                type="file" 
+                id="avatar-upload" 
+                className="hidden" 
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    // Muestra una alerta temporal, aquí se conectará la lógica de subida en el futuro
+                    alert("Foto seleccionada: " + file.name + "\n(La subida de imagen aún no está conectada al servidor)");
+                  }
+                }}
+              />
+            </label>
           </div>
           <h1 className="text-headline-md font-headline-md text-on-surface mb-xs">
             {user.name}
