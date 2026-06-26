@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { formatCOP, ORDER_STATUS_LABELS } from "@/lib/utils";
 import MaterialIcon from "./MaterialIcon";
 
@@ -32,6 +32,7 @@ type OrdersSectionProps = {
   onUpdateStatus: (orderId: number, newStatus: string) => void;
   loading: boolean;
   onShowAlert?: (title: string, message: React.ReactNode) => void;
+  initialExpandedOrderId?: number | null;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -63,11 +64,24 @@ export default function OrdersSection({
   onUpdateStatus,
   loading,
   onShowAlert,
+  initialExpandedOrderId = null,
 }: OrdersSectionProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedTimeframe, setSelectedTimeframe] = useState("all");
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (initialExpandedOrderId) {
+      setExpandedOrder(initialExpandedOrderId);
+      const targetOrder = orders.find(o => o.id === initialExpandedOrderId);
+      if (targetOrder) {
+        setSearchTerm(targetOrder.orderNumber);
+        setSelectedStatus("all");
+        setSelectedTimeframe("all");
+      }
+    }
+  }, [initialExpandedOrderId, orders]);
 
   const statuses = ["all", ...Array.from(new Set(orders.map(o => o.status)))];
 

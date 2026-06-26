@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatCOP, ORDER_STATUS_LABELS, ORDER_STATUS_BADGE } from "@/lib/utils";
 import { logoutAction } from "@/lib/actions/auth-actions";
@@ -15,6 +15,8 @@ import {
   updateCategoryAction,
   deleteCategoryAction,
   uploadImageAction,
+  getAdminOrdersAndCustomers,
+  getAdminStats,
 } from "@/lib/actions/admin-actions";
 import MaterialIcon from "./MaterialIcon";
 import ProductFormModal from "./ProductFormModal";
@@ -58,6 +60,17 @@ type AdminStats = {
   }[];
 };
 
+type AdminNotification = {
+  id: string;
+  type: "new_order" | "info";
+  title: string;
+  message: string;
+  orderId: number;
+  orderNumber: string;
+  createdAt: string;
+  read: boolean;
+};
+
 type AdminDashboardProps = {
   stats: AdminStats;
   products: AdminProduct[];
@@ -69,13 +82,13 @@ type AdminDashboardProps = {
 };
 
 export default function AdminDashboard({
-  stats,
+  stats: initialStats,
   products,
   categories,
-  orders = [],
-  orderItems = {},
-  customers = [],
-  recentOrders = [],
+  orders: initialOrders = [],
+  orderItems: initialOrderItems = {},
+  customers: initialCustomers = [],
+  recentOrders: initialRecentOrders = [],
 }: AdminDashboardProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -85,6 +98,199 @@ export default function AdminDashboard({
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [currentProducts, setCurrentProducts] = useState<AdminProduct[]>(products);
   const [currentCategories, setCurrentCategories] = useState<AdminCategory[]>(categories);
+
+  // Dynamic data states for polling
+  const [currentOrders, setCurrentOrders] = useState<any[]>(initialOrders);
+  const [currentOrderItems, setCurrentOrderItems] = useState<Record<number, any[]>>(initialOrderItems);
+  const [currentStats, setCurrentStats] = useState<AdminStats>(initialStats);
+  const [currentCustomers, setCurrentCustomers] = useState<any[]>(initialCustomers);
+  const [currentRecentOrders, setCurrentRecentOrders] = useState<any[]>(initialRecentOrders);
+
+  // Shadow variables mapping props to states to avoid breaking downstream references
+  const orders = currentOrders;
+  const orderItems = currentOrderItems;
+  const stats = currentStats;
+  const customers = currentCustomers;
+  const recentOrders = currentRecentOrders;
+
+  // Notification states
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [showNotificationsDropdown, setShowNotificationsDropdown] = useState(false);
+  const [activeNotificationToast, setActiveNotificationToast] = useState<AdminNotification | null>(null);
+  const [highlightedOrderId, setHighlightedOrderId] = useState<number | null>(null);
+
+  const audioContextInitialized = useRef(false);
+
+  // Play synthesized C-E-G chime
+  const playNotificationChime = () => {
+    if (typeof window === 'undefined') return;
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      gain1.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc1.start(ctx.currentTime);
+      osc1.stop(ctx.currentTime + 0.4);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(659.25, ctx.currentTime + 0.12); // E5
+      gain2.gain.setValueAtTime(0.12, ctx.currentTime + 0.12);
+      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.52);
+      osc2.start(ctx.currentTime + 0.12);
+      osc2.stop(ctx.currentTime + 0.52);
+      
+      const osc3 = ctx.createOscillator();
+      const gain3 = ctx.createGain();
+      osc3.connect(gain3);
+      gain3.connect(ctx.destination);
+      osc3.type = "sine";
+      osc3.frequency.setValueAtTime(783.99, ctx.currentTime + 0.24); // G5
+      gain3.gain.setValueAtTime(0.12, ctx.currentTime + 0.24);
+      gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.64);
+      osc3.start(ctx.currentTime + 0.24);
+      osc3.stop(ctx.currentTime + 0.64);
+    } catch (e) {
+      console.warn("Could not play notification sound:", e);
+    }
+  };
+
+  // Load notifications from localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("supercarnes_admin_notifications");
+      if (saved) {
+        try {
+          setNotifications(JSON.parse(saved));
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  }, []);
+
+  // Save notifications to localStorage when changed
+  useEffect(() => {
+    if (typeof window !== "undefined" && notifications.length > 0) {
+      localStorage.setItem("supercarnes_admin_notifications", JSON.stringify(notifications));
+    }
+  }, [notifications]);
+
+  // Polling for new orders
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const seenKey = "supercarnes_admin_seen_orders";
+    let seenSet = new Set<number>();
+    
+    const savedSeen = localStorage.getItem(seenKey);
+    if (savedSeen) {
+      try {
+        const parsed = JSON.parse(savedSeen) as number[];
+        parsed.forEach(id => seenSet.add(id));
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Mark current initial load orders as seen to prevent back-notification
+    initialOrders.forEach(o => {
+      seenSet.add(o.id);
+    });
+    localStorage.setItem(seenKey, JSON.stringify(Array.from(seenSet)));
+
+    const handleNewOrder = (order: any) => {
+      const newNotification: AdminNotification = {
+        id: `new-order-${order.id}`,
+        type: "new_order",
+        title: "Nuevo Pedido Recibido",
+        message: `Pedido ${order.orderNumber} por ${order.customerName} - ${formatCOP(order.total)}`,
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
+
+      playNotificationChime();
+      setNotifications(prev => [newNotification, ...prev]);
+      setActiveNotificationToast(newNotification);
+    };
+
+    const poll = async () => {
+      try {
+        const latestData = await getAdminOrdersAndCustomers();
+        if (latestData && latestData.orders) {
+          const newOrders = latestData.orders.filter(o => !seenSet.has(o.id));
+          
+          if (newOrders.length > 0) {
+            newOrders.forEach(o => {
+              seenSet.add(o.id);
+              handleNewOrder(o);
+            });
+            localStorage.setItem(seenKey, JSON.stringify(Array.from(seenSet)));
+
+            const latestStats = await getAdminStats();
+            if (latestStats) {
+              setCurrentStats({
+                ...latestStats,
+                totalSales: Number(latestStats.totalSales),
+              });
+            }
+          }
+
+          setCurrentOrders(latestData.orders);
+          setCurrentOrderItems(latestData.orderItems);
+          setCurrentCustomers(latestData.customers);
+          setCurrentRecentOrders(latestData.recentOrders);
+        }
+      } catch (error) {
+        console.error("Error polling for new orders:", error);
+      }
+    };
+
+    const pollInterval = setInterval(poll, 10000); // Check every 10 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [initialOrders]);
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev =>
+      prev.map(n => (n.id === id ? { ...n, read: true } : n))
+    );
+  };
+
+  const markAllAsRead = () => {
+    const updated = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updated);
+    localStorage.setItem("supercarnes_admin_notifications", JSON.stringify(updated));
+  };
+
+  const handleNotificationClick = (notification: AdminNotification) => {
+    markAsRead(notification.id);
+    setShowNotificationsDropdown(false);
+    setActiveNotificationToast(null);
+    setHighlightedOrderId(notification.orderId);
+    setActiveNav("orders");
+  };
+
+  const handleNavChange = (navId: string) => {
+    setActiveNav(navId);
+    if (navId !== "orders") {
+      setHighlightedOrderId(null);
+    }
+  };
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -317,7 +523,29 @@ export default function AdminDashboard({
     startTransition(async () => {
       try {
         await updateOrderStatus(orderId, newStatus);
+        
+        // Update local orders state immediately so the UI reflects the change
+        setCurrentOrders(prev =>
+          prev.map(o => (o.id === orderId ? { ...o, status: newStatus } : o))
+        );
+        
         showToast(`Estado del pedido actualizado a: ${newStatus}`);
+
+        // Sync other parts of the admin panel (stats, customers, etc.)
+        const latestData = await getAdminOrdersAndCustomers();
+        if (latestData) {
+          setCurrentOrders(latestData.orders);
+          setCurrentOrderItems(latestData.orderItems);
+          setCurrentCustomers(latestData.customers);
+          setCurrentRecentOrders(latestData.recentOrders);
+        }
+        const latestStats = await getAdminStats();
+        if (latestStats) {
+          setCurrentStats({
+            ...latestStats,
+            totalSales: Number(latestStats.totalSales),
+          });
+        }
       } catch (error) {
         console.error("Error al actualizar estado:", error);
         showToast("Error al actualizar estado del pedido");
@@ -440,6 +668,7 @@ export default function AdminDashboard({
             onUpdateStatus={handleUpdateOrderStatus}
             loading={isPending}
             onShowAlert={showAlert}
+            initialExpandedOrderId={highlightedOrderId}
           />
         );
       
@@ -537,7 +766,7 @@ export default function AdminDashboard({
                   </h2>
                   <button
                     type="button"
-                    onClick={() => setActiveNav("orders")}
+                    onClick={() => handleNavChange("orders")}
                     className="bg-primary text-on-primary px-lg py-sm rounded-lg font-label-md text-label-md hover:bg-primary-container transition-colors flex items-center gap-sm"
                   >
                     <MaterialIcon name="shopping_bag" className="text-[20px]" />
@@ -735,7 +964,7 @@ export default function AdminDashboard({
             <button
               key={item.id}
               type="button"
-              onClick={() => setActiveNav(item.id)}
+              onClick={() => handleNavChange(item.id)}
               className={`w-full flex items-center gap-md px-md py-md rounded-lg transition-all group ${
                 activeNav === item.id
                   ? "bg-primary/10 text-primary border-l-4 border-primary"
@@ -796,12 +1025,124 @@ export default function AdminDashboard({
               <MaterialIcon name="store" className="text-[20px]" />
               <span>Volver a la tienda</span>
             </Link>
-            <div className="relative group">
-              <MaterialIcon
-                name="notifications"
-                className="text-secondary cursor-pointer hover:text-primary transition-colors"
-              />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+            {/* Notifications Bell & Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNotificationsDropdown(!showNotificationsDropdown);
+                  if (!audioContextInitialized.current) {
+                    try {
+                      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+                      if (AudioContext) {
+                        const tempCtx = new AudioContext();
+                        tempCtx.resume();
+                      }
+                      audioContextInitialized.current = true;
+                    } catch (e) {
+                      // ignore
+                    }
+                  }
+                }}
+                className="relative p-1.5 rounded-full hover:bg-surface-container transition-all flex items-center justify-center focus:outline-none"
+                title="Notificaciones"
+              >
+                <MaterialIcon
+                  name="notifications"
+                  className={`${
+                    notifications.filter(n => !n.read).length > 0
+                      ? "text-primary animate-swing"
+                      : "text-secondary"
+                  } cursor-pointer hover:text-primary transition-colors text-[24px]`}
+                />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-error text-on-error rounded-full text-[9px] font-bold flex items-center justify-center border border-surface-container-lowest shadow-md animate-pulse">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </button>
+
+              {showNotificationsDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowNotificationsDropdown(false)}
+                  />
+                  <div className="absolute right-0 mt-sm w-96 bg-surface-container-lowest rounded-xl shadow-2xl border border-surface-variant/20 py-md z-50 animate-fade-in max-h-[420px] flex flex-col">
+                    <div className="px-lg pb-sm border-b border-surface-variant/10 flex justify-between items-center">
+                      <h3 className="font-label-md text-label-md font-bold text-on-surface">
+                        Notificaciones
+                      </h3>
+                      {notifications.filter(n => !n.read).length > 0 && (
+                        <button
+                          type="button"
+                          onClick={markAllAsRead}
+                          className="text-primary text-caption hover:underline font-bold"
+                        >
+                          Marcar todas leídas
+                        </button>
+                      )}
+                    </div>
+                    <div className="overflow-y-auto custom-scrollbar flex-1 max-h-[300px]">
+                      {notifications.length === 0 ? (
+                        <div className="py-xl text-center text-secondary">
+                          <MaterialIcon name="notifications_off" className="text-3xl mb-sm" />
+                          <p className="text-caption">No tienes notificaciones</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-surface-variant/10">
+                          {notifications.map(n => (
+                            <div
+                              key={n.id}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`p-md hover:bg-surface-container-low transition-colors cursor-pointer flex gap-md items-start ${
+                                !n.read ? "bg-primary/5" : ""
+                              }`}
+                            >
+                              <div className={`p-xs rounded-full mt-0.5 ${
+                                !n.read ? "bg-primary/10 text-primary" : "bg-surface-variant text-secondary"
+                              }`}>
+                                <MaterialIcon name="shopping_bag" className="text-[18px]" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start gap-sm">
+                                  <p className="font-label-md text-label-md text-on-surface font-semibold truncate">
+                                    {n.title}
+                                  </p>
+                                  <span className="text-[10px] text-secondary flex-shrink-0">
+                                    {new Date(n.createdAt).toLocaleTimeString("es-MX", {
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    })}
+                                  </span>
+                                </div>
+                                <p className="text-caption text-secondary mt-xs line-clamp-2">
+                                  {n.message}
+                                </p>
+                              </div>
+                              {!n.read && (
+                                <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="px-lg pt-sm border-t border-surface-variant/10 text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNotificationsDropdown(false);
+                          handleNavChange("orders");
+                        }}
+                        className="text-primary font-label-md text-caption hover:underline font-bold"
+                      >
+                        Ver todos los pedidos
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <MaterialIcon
               name="settings"
@@ -854,6 +1195,150 @@ export default function AdminDashboard({
         <MaterialIcon name="check_circle" className="text-primary" />
         <span className="font-label-md">{toast.message}</span>
       </div>
+
+      {/* Centered Modal Alert for New Orders */}
+      {activeNotificationToast && (() => {
+        const fullOrder = currentOrders.find(o => o.id === activeNotificationToast.orderId);
+        const items = currentOrderItems[activeNotificationToast.orderId] || [];
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-md animate-fade-in">
+            <div className="bg-surface-container-lowest text-on-surface rounded-2xl shadow-2xl border border-surface-variant/20 p-lg w-full max-w-2xl animate-scale-up flex flex-col gap-md relative overflow-hidden">
+              {/* Top Accent Bar */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-primary" />
+              
+              <div className="flex justify-between items-start mt-xs">
+                <div className="flex gap-md items-center">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center animate-bounce shadow-inner">
+                    <MaterialIcon name="campaign" className="text-[28px]" />
+                  </div>
+                  <div>
+                    <h3 className="font-headline-md text-headline-md text-primary font-extrabold tracking-tight">
+                      ¡Nuevo Pedido Recibido!
+                    </h3>
+                    <p className="text-caption text-secondary">
+                      Recibido hace un momento
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveNotificationToast(null)}
+                  className="text-secondary hover:text-on-surface transition-colors focus:outline-none p-1 rounded-full hover:bg-surface-container-low"
+                  title="Cerrar"
+                >
+                  <MaterialIcon name="close" className="text-[20px]" />
+                </button>
+              </div>
+
+              {/* Order Details Body - 2 Columns grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-md text-left">
+                {/* Column 1: Client & Delivery Info */}
+                <div className="bg-surface-container-low rounded-xl p-md border border-surface-variant/10 space-y-sm flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-primary text-body-md border-b border-surface-variant/20 pb-xs mb-sm">
+                      Información de Entrega
+                    </h4>
+                    <div className="space-y-sm text-caption">
+                      <div>
+                        <p className="text-secondary font-semibold">Cliente</p>
+                        <p className="font-bold text-on-surface text-body-md truncate">
+                          {fullOrder ? fullOrder.customerName : "Cargando..."}
+                        </p>
+                        <p className="text-secondary text-[11px] truncate">
+                          {fullOrder ? fullOrder.customerEmail : ""}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-secondary font-semibold">Teléfono de contacto</p>
+                        <p className="font-bold text-on-surface text-body-md">
+                          {fullOrder ? (fullOrder.contactPhone || "No provisto") : "Cargando..."}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-secondary font-semibold">Dirección</p>
+                        <p className="font-bold text-on-surface text-body-md line-clamp-2">
+                          {fullOrder ? fullOrder.shippingAddress : "Cargando..."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-surface-variant/20 pt-sm mt-sm grid grid-cols-2 gap-xs text-caption">
+                    <div>
+                      <p className="text-secondary">Método de Pago</p>
+                      <p className="font-bold text-on-surface uppercase truncate">
+                        {fullOrder ? (fullOrder.paymentMethod === "cash" ? "Efectivo" : fullOrder.paymentMethod === "card" ? "Tarjeta" : fullOrder.paymentMethod) : "Cargando..."}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-secondary">Pedido Nro.</p>
+                      <p className="font-bold text-on-surface truncate">
+                        {activeNotificationToast.orderNumber}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 2: Order Items Summary */}
+                <div className="bg-surface-container-low rounded-xl p-md border border-surface-variant/10 flex flex-col justify-between">
+                  <div>
+                    <h4 className="font-bold text-primary text-body-md border-b border-surface-variant/20 pb-xs mb-sm">
+                      Artículos ({items.reduce((acc, curr) => acc + curr.quantity, 0)})
+                    </h4>
+                    <div className="space-y-xs max-h-[160px] overflow-y-auto custom-scrollbar pr-xs">
+                      {items.length === 0 ? (
+                        <p className="text-caption text-secondary py-md text-center">No hay artículos cargados</p>
+                      ) : (
+                        items.map(item => (
+                          <div key={item.id} className="flex justify-between items-center text-caption py-1 border-b border-surface-variant/5 last:border-0 gap-sm">
+                            <span className="text-on-surface truncate flex-1 font-medium">
+                              {item.productName} <span className="text-secondary font-bold">x{item.quantity}</span>
+                            </span>
+                            <span className="font-bold text-on-surface flex-shrink-0">
+                              {formatCOP(item.total)}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-surface-variant/20 pt-sm mt-sm flex justify-between items-end">
+                    <div>
+                      <p className="text-secondary text-[11px]">Monto Total</p>
+                      <p className="font-extrabold text-primary text-headline-md tracking-tight leading-none">
+                        {fullOrder ? formatCOP(fullOrder.total) : "Cargando..."}
+                      </p>
+                    </div>
+                    <span className="bg-primary/10 text-primary px-md py-xs rounded-full text-[11px] font-extrabold uppercase">
+                      Pendiente
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div className="flex gap-md mt-sm border-t border-surface-variant/10 pt-md">
+                <button
+                  type="button"
+                  onClick={() => setActiveNotificationToast(null)}
+                  className="flex-1 py-md border border-outline-variant/30 rounded-xl text-label-md font-semibold hover:bg-surface-container-low transition-colors text-center text-secondary focus:outline-none"
+                >
+                  Entendido
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNotificationClick(activeNotificationToast)}
+                  className="flex-1 bg-primary text-on-primary py-md rounded-xl text-label-md font-bold hover:bg-primary-container transition-colors text-center shadow-lg focus:outline-none flex items-center justify-center gap-xs"
+                >
+                  <MaterialIcon name="visibility" className="text-[18px]" />
+                  <span>Ver Pedido Completo</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
